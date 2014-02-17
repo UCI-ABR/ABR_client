@@ -86,16 +86,16 @@ public class Camera_feedback
 			parameters.setPreviewSize(mPreviewSize.width, mPreviewSize.height);
 			mSupportedFPS = parameters.getSupportedPreviewFpsRange();
 			
-			int fps1=0,fps2=0;		
-			for(int i=0; i<mSupportedFPS.size();i++)
-			{
-				fps1 = mSupportedFPS.get(i)[0];
-				fps2 = mSupportedFPS.get(i)[1];	
-				Log.i(TAG, "fps: " + fps1 + " ; " + fps2);
-			}
-			parameters.setPreviewFpsRange(fps1, fps2);			
-//			parameters.setFocusMode(Parameters.FOCUS_MODE_INFINITY);			
-			parameters.setSceneMode(Camera.Parameters.SCENE_MODE_ACTION); //for higher fps BUT...can greatly vary on phone 
+//			int fps1=0,fps2=0;		
+//			for(int i=0; i<mSupportedFPS.size();i++)
+//			{
+//				fps1 = mSupportedFPS.get(i)[0];
+//				fps2 = mSupportedFPS.get(i)[1];	
+//				Log.i(TAG, "fps: " + fps1 + " ; " + fps2);
+//			}
+//			parameters.setPreviewFpsRange(fps1, fps2);			
+////			parameters.setFocusMode(Parameters.FOCUS_MODE_INFINITY);			
+//			parameters.setSceneMode(Camera.Parameters.SCENE_MODE_ACTION); //for higher fps BUT...can greatly vary on phone 
 			mCamera.setParameters(parameters);
 
 			try { mCamera.setPreviewTexture(dummy_surface); } catch (IOException t) {}

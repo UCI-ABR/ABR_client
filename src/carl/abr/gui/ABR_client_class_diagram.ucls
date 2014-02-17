@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<class-diagram version="1.1.4" icons="true" always-add-relationships="false" generalizations="true" realizations="true" 
+  associations="true" dependencies="false" nesting-relationships="true">  
+  <class id="1" language="java" name="carl.abr.gui.Main_activity" project="ABR_client" 
+    file="/ABR_client/src/carl/abr/gui/Main_activity.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position x="134" y="558" width="-1" height="-1"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false" static="true"/>      
+      <operations public="true" package="true" protected="true" private="true" static="true"/>    
+    </display>  
+  </class>  
+  <class id="2" language="java" name="carl.abr.gui.My_spinner_Class" project="ABR_client" 
+    file="/ABR_client/src/carl/abr/gui/My_spinner_Class.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position x="138" y="115" width="-1" height="-1"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false" static="true"/>      
+      <operations public="true" package="true" protected="true" private="true" static="true"/>    
+    </display>  
+  </class>  
+  <class id="3" language="java" name="carl.abr.IO.GPS_listener" project="ABR_client" 
+    file="/ABR_client/src/carl/abr/IO/GPS_listener.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position x="819" y="451" width="-1" height="-1"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false" static="true"/>      
+      <operations public="true" package="true" protected="true" private="true" static="true"/>    
+    </display>  
+  </class>  
+  <class id="4" language="java" name="carl.abr.IO.Sensors_listener" project="ABR_client" 
+    file="/ABR_client/src/carl/abr/IO/Sensors_listener.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position x="818" y="171" width="-1" height="-1"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false" static="true"/>      
+      <operations public="true" package="true" protected="true" private="true" static="true"/>    
+    </display>  
+  </class>  
+  <class id="5" language="java" name="carl.abr.threads.IOIO_thread" project="ABR_client" 
+    file="/ABR_client/src/carl/abr/threads/IOIO_thread.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position x="812" y="769" width="-1" height="-1"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false" static="true"/>      
+      <operations public="true" package="true" protected="true" private="true" static="true"/>    
+    </display>  
+  </class>  
+  <class id="6" language="java" name="carl.abr.threads.Main_thread" project="ABR_client" 
+    file="/ABR_client/src/carl/abr/threads/Main_thread.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position x="1323" y="580" width="-1" height="-1"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false" static="true"/>      
+      <operations public="true" package="true" protected="true" private="true" static="true"/>    
+    </display>  
+  </class>  
+  <class id="7" language="java" name="carl.abr.utils.File_RW" project="ABR_client" 
+    file="/ABR_client/src/carl/abr/utils/File_RW.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position x="425" y="79" width="-1" height="-1"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false" static="true"/>      
+      <operations public="true" package="true" protected="true" private="true" static="true"/>    
+    </display>  
+  </class>  
+  <class id="8" language="java" name="carl.abr.IO.Camera_feedback" project="ABR_client" 
+    file="/ABR_client/src/carl/abr/IO/Camera_feedback.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position x="810" y="932" width="-1" height="-1"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false" static="true"/>      
+      <operations public="true" package="true" protected="true" private="true" static="true"/>    
+    </display>  
+  </class>  
+  <class id="9" language="java" name="carl.abr.IO.Camera_feedback.cam_PreviewCallback" project="ABR_client" 
+    file="/ABR_client/src/carl/abr/IO/Camera_feedback.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position x="811" y="1068" width="-1" height="-1"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
+      <operations public="true" package="true" protected="true" private="true" static="true"/>    
+    </display>  
+  </class>  
+  <class id="10" language="java" name="java.lang.Thread" project="ABR_client" 
+    file="/Users/nicolasoros/adt-bundle-mac-x86_64-20130522/sdk/platforms/android-17/android.jar" binary="true" 
+    corner="BOTTOM_RIGHT">    
+    <position x="1325" y="301" width="-1" height="-1"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false" static="true"/>      
+      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+    </display>  
+  </class>  
+  <interface id="11" language="java" name="android.hardware.SensorEventListener" project="ABR_client" 
+    file="/Users/nicolasoros/adt-bundle-mac-x86_64-20130522/sdk/platforms/android-17/android.jar" binary="true" 
+    corner="BOTTOM_RIGHT">    
+    <position x="818" y="28" width="-1" height="-1"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false" static="true"/>      
+      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+    </display>  
+  </interface>  
+  <interface id="12" language="java" name="android.location.LocationListener" project="ABR_client" 
+    file="/Users/nicolasoros/adt-bundle-mac-x86_64-20130522/sdk/platforms/android-17/android.jar" binary="true" 
+    corner="BOTTOM_RIGHT">    
+    <position x="812" y="294" width="-1" height="-1"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false" static="true"/>      
+      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+    </display>  
+  </interface>  
+  <class id="13" language="java" name="android.app.Activity" project="ABR_client" 
+    file="/Users/nicolasoros/adt-bundle-mac-x86_64-20130522/sdk/platforms/android-17/android.jar" binary="true" 
+    corner="BOTTOM_RIGHT">    
+    <position x="125" y="837" width="-1" height="-1"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false" static="true"/>      
+      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+    </display>  
+  </class>  
+  <class id="14" language="java" name="ioio.lib.util.BaseIOIOLooper" project="ABR_client" 
+    file="/Users/nicolasoros/Dropbox/RESEARCH/Programming/ABR_2.1/App-IOIO0330/IOIOLib/target/android/bin/ioiolibandroid.jar" 
+    binary="true" corner="BOTTOM_RIGHT">    
+    <position x="812" y="633" width="-1" height="-1"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false" static="true"/>      
+      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+    </display>  
+  </class>  
+  <interface id="15" language="java" name="android.hardware.Camera.PreviewCallback" project="ABR_client" 
+    file="/Users/nicolasoros/adt-bundle-mac-x86_64-20130522/sdk/platforms/android-17/android.jar" binary="true" 
+    corner="BOTTOM_RIGHT">    
+    <position x="1034" y="1062" width="-1" height="-1"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false" static="true"/>      
+      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+    </display>  
+  </interface>  
+  <realization id="16">    
+    <end type="SOURCE" refId="3"/>    
+    <end type="TARGET" refId="12"/>  
+  </realization>  
+  <realization id="17">    
+    <end type="SOURCE" refId="4"/>    
+    <end type="TARGET" refId="11"/>  
+  </realization>  
+  <association id="18">    
+    <end type="SOURCE" refId="6" navigable="false">      
+      <attribute id="19" name="the_sensors">        
+        <position x="938" y="246" width="78" height="18"/>      
+      </attribute>      
+      <multiplicity id="20" minimum="0" maximum="1">        
+        <position x="956" y="270" width="25" height="16"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" refId="4" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="21">    
+    <end type="SOURCE" refId="1" navigable="false">      
+      <attribute id="22" name="locationListener_GPS">        
+        <position x="556" y="450" width="130" height="18"/>      
+      </attribute>      
+      <multiplicity id="23" minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" refId="3" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="24">    
+    <bendpoint x="996" y="570"/>    
+    <end type="SOURCE" refId="6" navigable="false">      
+      <attribute id="25" name="the_gui">        
+        <position x="296" y="593" width="52" height="18"/>      
+      </attribute>      
+      <multiplicity id="26" minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" refId="1" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <generalization id="27">    
+    <end type="SOURCE" refId="6"/>    
+    <end type="TARGET" refId="10"/>  
+  </generalization>  
+  <generalization id="28">    
+    <end type="SOURCE" refId="5"/>    
+    <end type="TARGET" refId="14"/>  
+  </generalization>  
+  <association id="29">    
+    <bendpoint x="244" y="804"/>    
+    <bendpoint x="270" y="806"/>    
+    <bendpoint x="270" y="776"/>    
+    <end type="SOURCE" refId="1" navigable="false">      
+      <attribute id="30" name="the_activity">        
+        <position x="153" y="762" width="72" height="18"/>      
+      </attribute>      
+      <multiplicity id="31" minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" refId="1" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="32">    
+    <end type="SOURCE" refId="6" navigable="false">      
+      <attribute id="33" name="ioio_thread">        
+        <position x="919" y="686" width="73" height="18"/>      
+      </attribute>      
+      <multiplicity id="34" minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" refId="5" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="35">    
+    <end type="SOURCE" refId="3" navigable="false">      
+      <attribute id="36" name="main_acti">        
+        <position x="278" y="506" width="64" height="18"/>      
+      </attribute>      
+      <multiplicity id="37" minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" refId="1" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="38">    
+    <end type="SOURCE" refId="1" navigable="false">      
+      <attribute id="39" name="the_main_thread">        
+        <position x="1112" y="555" width="104" height="18"/>      
+      </attribute>      
+      <multiplicity id="40" minimum="0" maximum="1">        
+        <position x="1171" y="628" width="25" height="16"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" refId="6" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="41">    
+    <end type="SOURCE" refId="1" navigable="false">      
+      <attribute id="42" name="spinner_port">        
+        <position x="38" y="251" width="80" height="18"/>      
+      </attribute>      
+      <multiplicity id="43" minimum="0" maximum="1">        
+        <position x="97" y="232" width="25" height="16"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" refId="2" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <nesting id="44">    
+    <end type="SOURCE" refId="8"/>    
+    <end type="TARGET" refId="9"/>  
+  </nesting>  
+  <association id="45">    
+    <end type="SOURCE" refId="6" navigable="false">      
+      <attribute id="46" name="the_cam">        
+        <position x="910" y="854" width="58" height="18"/>      
+      </attribute>      
+      <multiplicity id="47" minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" refId="8" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="48">    
+    <end type="SOURCE" refId="5" navigable="false">      
+      <attribute id="49" name="the_gui">        
+        <position x="304" y="566" width="52" height="18"/>      
+      </attribute>      
+      <multiplicity id="50" minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" refId="1" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <generalization id="51">    
+    <end type="SOURCE" refId="1"/>    
+    <end type="TARGET" refId="13"/>  
+  </generalization>  
+  <realization id="52">    
+    <end type="SOURCE" refId="9"/>    
+    <end type="TARGET" refId="15"/>  
+  </realization>  
+  <association id="53">    
+    <end type="SOURCE" refId="1" navigable="false">      
+      <attribute id="54" name="sensor_listener"/>      
+      <multiplicity id="55" minimum="0" maximum="1">        
+        <position x="667" y="253" width="25" height="16"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" refId="4" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="56">    
+    <end type="SOURCE" refId="1" navigable="false">      
+      <attribute id="57" name="the_cam">        
+        <position x="649" y="872" width="58" height="18"/>      
+      </attribute>      
+      <multiplicity id="58" minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" refId="8" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="59">    
+    <end type="SOURCE" refId="1" navigable="false">      
+      <attribute id="60" name="the_IOIO">        
+        <position x="650" y="698" width="59" height="18"/>      
+      </attribute>      
+      <multiplicity id="61" minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" refId="5" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="62">    
+    <end type="SOURCE" refId="6" navigable="false">      
+      <attribute id="63" name="GPS"/>      
+      <multiplicity id="64" minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" refId="3" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="65">    
+    <end type="SOURCE" refId="1" navigable="false">      
+      <attribute id="66" name="spinner_IP">        
+        <position x="140" y="258" width="70" height="18"/>      
+      </attribute>      
+      <multiplicity id="67" minimum="0" maximum="1">        
+        <position x="143" y="233" width="25" height="16"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" refId="2" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <classifier-display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
+    accessors="true" visibility="true">    
+    <attributes public="true" package="true" protected="true" private="true" static="true"/>    
+    <operations public="true" package="true" protected="true" private="true" static="true"/>  
+  </classifier-display>  
+  <association-display labels="true" multiplicity="true"/>
+</class-diagram>
