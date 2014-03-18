@@ -43,7 +43,7 @@ BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
 WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*******************************************************************************************************/
+ *******************************************************************************************************/
 
 package carl.abr.threads;
 
@@ -90,7 +90,7 @@ public class Main_thread extends Thread
 	boolean STOP = false, NEW_IMA=true, SENSORS_SOCKET=false, RECONNECT_TCP=true;
 	long old_time,cycle, time;
 	float update_rate;
-//	Vector<Long> cycles;
+	//	Vector<Long> cycles;
 
 	/***************************************************************   camera   ***************************************************************/
 	Camera_feedback the_cam;
@@ -181,7 +181,7 @@ public class Main_thread extends Thread
 		NEW_DATA_IOIO = false;
 		NEW_DATA_GPS = false;
 
-//		cycles = new Vector<Long>();
+		//		cycles = new Vector<Long>();
 	}
 
 	public synchronized void stop_thread()
@@ -220,13 +220,13 @@ public class Main_thread extends Thread
 
 			if(ioio_thread != null) ioio_thread.set_PWM_values(pwm_motor, pwm_servo);			//set pwm values, wake up ioio thread 
 
-//			if(the_gui.CAMERA_STARTED == true || the_gui.SENSORS_STARTED == true || the_gui.IOIO_STARTED == true)
-//			{
-//				time = SystemClock.elapsedRealtime();
-//				cycle = time - old_time;			
-//				old_time = time;
-//				cycles.add(cycle);
-//			}
+			//			if(the_gui.CAMERA_STARTED == true || the_gui.SENSORS_STARTED == true || the_gui.IOIO_STARTED == true)
+			//			{
+			//				time = SystemClock.elapsedRealtime();
+			//				cycle = time - old_time;			
+			//				old_time = time;
+			//				cycles.add(cycle);
+			//			}
 			//			Log.i(TAG,"cycle: " + cycle);
 		}
 
@@ -253,8 +253,8 @@ public class Main_thread extends Thread
 			{				
 				the_TCP_socket = new Socket();	
 				the_TCP_socket.connect(serverAddr_TCP, 5000);				//connect timeout  (ms)
-//				the_TCP_socket.setSoTimeout(5);				//read timeout  (ms)
-				the_TCP_socket.setSoTimeout(20);				//read timeout  (ms)
+				//				the_TCP_socket.setSoTimeout(5);				//read timeout  (ms)
+				the_TCP_socket.setSoTimeout(10);							//read timeout  (ms)
 				out = new BufferedWriter(new OutputStreamWriter(the_TCP_socket.getOutputStream()));
 				input = new BufferedReader(new InputStreamReader(the_TCP_socket.getInputStream()));
 
@@ -263,7 +263,7 @@ public class Main_thread extends Thread
 
 				out.write(message_TCP);
 				out.flush();
-				Log.i("tcp","send msg " + message_TCP);
+//				Log.i("tcp","send msg " + message_TCP);
 			}
 			catch(java.io.IOException e) 
 			{
@@ -288,35 +288,26 @@ public class Main_thread extends Thread
 
 	private void read_socket_tcp()
 	{
-//		counter_TCP_check++;
-//		if(counter_TCP_check==500)	//every 5s approx.
-//		{
-//			counter_TCP_check=0;
-//			try 
-//			{
-//				//				Log.i("tcp","send tcp check");
-//				//				out.write("TCP_CHECK");
-//				//				out.flush();
-//				String s = "MAIN/";
-//
-//				for(int i=0; i<cycles.size(); i++)
-//				{
-//					s += cycles.get(i) + "\n";
-//				}
-//				out.write(s);
-//				out.flush();
-//				cycles.clear();
-//			} 
-//			catch (IOException e) 					//if connection is lost	
-//			{	
-//				Log.e("tcp","error write: ", e); 
-//				stop_tcp();							//close properly
-//				stop_all();
-//				run_on_UI(6);
-//				RECONNECT_TCP = true;
-//				start_tcp();
-//			} 			
-//		}			
+		counter_TCP_check++;
+		if(counter_TCP_check==500)	//every 5s approx.
+		{
+			counter_TCP_check=0;
+			try 
+			{
+//				Log.i("tcp","send tcp check");
+				out.write("TCP_CHECK");
+				out.flush();
+			} 
+			catch (IOException e) 					//if connection is lost	
+			{	
+				Log.e("tcp","error write: ", e); 
+				stop_tcp();							//close properly
+				stop_all();
+				run_on_UI(6);
+				RECONNECT_TCP = true;
+				start_tcp();
+			} 			
+		}			
 
 		if(RECONNECT_TCP==false)
 		{
@@ -335,6 +326,11 @@ public class Main_thread extends Thread
 				{
 					RECONNECT_TCP = false;	//the server replied so no need to reconnect
 					//				Log.i("tcp","tcp server still connected");
+				}
+				else if(sss[0].matches("PWM") == true)
+				{		
+					pwm_motor = Integer.parseInt(sss[1]);
+					pwm_servo = Integer.parseInt(sss[2]);
 				}
 				else if(sss[0].matches("CAMERA_ON") == true)
 				{	        		
@@ -388,11 +384,6 @@ public class Main_thread extends Thread
 					Log.i(TAG,"change mode");
 					RC_MODE = (Byte.parseByte(sss[1])!=0);
 					EXPLORE_MODE = (Byte.parseByte(sss[2])!=0);
-				}
-				else if(sss[0].matches("PWM") == true)
-				{		
-					pwm_motor = Integer.parseInt(sss[1]);
-					pwm_servo = Integer.parseInt(sss[2]);
 				}
 			}
 		}
@@ -511,8 +502,8 @@ public class Main_thread extends Thread
 				{
 					string_sensors_vals += "/" + GPS.cycle;
 				}
-//				long gc = GPS.cycle;
-//				if(gc > -10) string_sensors_vals += "/" + gc;
+				//				long gc = GPS.cycle;
+				//				if(gc > -10) string_sensors_vals += "/" + gc;
 
 				try 
 				{			 
@@ -705,7 +696,7 @@ public class Main_thread extends Thread
 				height_ima = the_cam.mPreviewSize.height;		
 				the_image = Bitmap.createBitmap(width_ima, height_ima, Bitmap.Config.ARGB_8888);
 				m = new Mat(height_ima + height_ima / 2, width_ima, CvType.CV_8UC1);	//m will be YUV format
-				
+
 				dest = new Mat(64 + 32,80,CvType.CV_8UC1);	
 				dest2 = new Mat();
 				byteStream = new ByteArrayOutputStream();
@@ -719,24 +710,24 @@ public class Main_thread extends Thread
 			if(data != null)
 			{
 				m.put(0, 0, data);
-//				Imgproc.cvtColor(m, dest, Imgproc.COLOR_YUV420sp2RGB,4);	//YUV to ARGB
-				
+				//				Imgproc.cvtColor(m, dest, Imgproc.COLOR_YUV420sp2RGB,4);	//YUV to ARGB
+
 				Imgproc.resize(m, dest, dest.size());
 				Imgproc.cvtColor(dest, dest2, Imgproc.COLOR_YUV420sp2GRAY);		//format to grayscale				
-				
+
 				/** compress to jpeg using opencv...not sure it's faster than using Bitmap Compress**/
 				MatOfInt  params = new MatOfInt(Highgui.IMWRITE_JPEG_QUALITY, compression_rate);				
 				MatOfByte buff = new MatOfByte();	
 				Highgui.imencode(".jpg", dest2, buff, params);				
 				/************************/
-				
+
 				picData = buff.toArray();
-			
+
 				/** compress to jpeg  **/
-//				Utils.matToBitmap(dest, the_image);
-//				byteStream.reset();
-//				the_image.compress(Bitmap.CompressFormat.JPEG, compression_rate, byteStream);	// !!!!!!!  change compression rate to change packets size
-//				picData = byteStream.toByteArray();		
+				//				Utils.matToBitmap(dest, the_image);
+				//				byteStream.reset();
+				//				the_image.compress(Bitmap.CompressFormat.JPEG, compression_rate, byteStream);	// !!!!!!!  change compression rate to change packets size
+				//				picData = byteStream.toByteArray();		
 				NEW_FRAME = true;
 			}
 			else NEW_FRAME = false;
