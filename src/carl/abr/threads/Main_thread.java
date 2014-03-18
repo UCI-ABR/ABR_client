@@ -64,6 +64,9 @@ import java.util.Vector;
 import org.opencv.android.Utils;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfByte;
+import org.opencv.core.MatOfInt;
+import org.opencv.highgui.Highgui;
 import org.opencv.imgproc.Imgproc;
 
 import android.graphics.Bitmap;
@@ -99,7 +102,7 @@ public class Main_thread extends Thread
 	int width_ima, height_ima,packetCount,nb_packets,size;
 	byte[] picData;
 	int compression_rate;
-	Mat m,dest;							//openCV image
+	Mat m,dest, dest2;							//openCV image
 	boolean NEW_FRAME;
 
 	/*****************************************   IOIO    ***************************************************************/
@@ -701,8 +704,10 @@ public class Main_thread extends Thread
 				width_ima = the_cam.mPreviewSize.width;
 				height_ima = the_cam.mPreviewSize.height;		
 				the_image = Bitmap.createBitmap(width_ima, height_ima, Bitmap.Config.ARGB_8888);
-				m = new Mat(height_ima + height_ima / 2, width_ima, CvType.CV_8UC1);
-				dest = new Mat();	
+				m = new Mat(height_ima + height_ima / 2, width_ima, CvType.CV_8UC1);	//m will be YUV format
+				
+				dest = new Mat(64 + 32,80,CvType.CV_8UC1);	
+				dest2 = new Mat();
 				byteStream = new ByteArrayOutputStream();
 				compression_rate = 75;					// default jpeg compression rate
 				NEW_IMA=false;
@@ -714,10 +719,24 @@ public class Main_thread extends Thread
 			if(data != null)
 			{
 				m.put(0, 0, data);
-				Imgproc.cvtColor(m, dest, Imgproc.COLOR_YUV420sp2RGB,4);
-				Utils.matToBitmap(dest, the_image);
-				byteStream.reset();
-				the_image.compress(Bitmap.CompressFormat.JPEG, compression_rate, byteStream);	// !!!!!!!  change compression rate to change packets size
+//				Imgproc.cvtColor(m, dest, Imgproc.COLOR_YUV420sp2RGB,4);	//YUV to ARGB
+				
+				Imgproc.resize(m, dest, dest.size());
+				Imgproc.cvtColor(dest, dest2, Imgproc.COLOR_YUV420sp2GRAY);		//format to grayscale				
+				
+				/** compress to jpeg using opencv...not sure it's faster than using Bitmap Compress**/
+				MatOfInt  params = new MatOfInt(Highgui.IMWRITE_JPEG_QUALITY, compression_rate);				
+				MatOfByte buff = new MatOfByte();	
+				Highgui.imencode(".jpg", dest2, buff, params);				
+				/************************/
+				
+				picData = buff.toArray();
+			
+				/** compress to jpeg  **/
+//				Utils.matToBitmap(dest, the_image);
+//				byteStream.reset();
+//				the_image.compress(Bitmap.CompressFormat.JPEG, compression_rate, byteStream);	// !!!!!!!  change compression rate to change packets size
+//				picData = byteStream.toByteArray();		
 				NEW_FRAME = true;
 			}
 			else NEW_FRAME = false;
@@ -727,8 +746,8 @@ public class Main_thread extends Thread
 	private void send_camera_data()
 	{
 		if(NEW_FRAME == true && socket_udp_camera!=null) //the_gui.CAMERA_STARTED
-		{			
-			picData = byteStream.toByteArray();
+		{						
+
 			nb_packets = (int)Math.ceil(picData.length / (float)DATAGRAM_MAX_SIZE);				//Number of packets used for this bitmap
 			size = DATAGRAM_MAX_SIZE;
 
