@@ -75,7 +75,7 @@
   </class>  
   <class id="9" language="java" name="carl.abr.IO.Camera_feedback.cam_PreviewCallback" project="ABR_client" 
     file="/ABR_client/src/carl/abr/IO/Camera_feedback.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position x="1204" y="706" width="-1" height="-1"/>    
+    <position x="1202" y="706" width="-1" height="-1"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
       visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -85,7 +85,7 @@
   <class id="10" language="java" name="java.lang.Thread" project="ABR_client" 
     file="/Users/nicolasoros/adt-bundle-mac-x86_64-20130522/sdk/platforms/android-17/android.jar" binary="true" 
     corner="BOTTOM_RIGHT">    
-    <position x="524" y="86" width="-1" height="-1"/>    
+    <position x="526" y="60" width="-1" height="-1"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
       visibility="true">      
       <attributes public="false" package="false" protected="false" private="false" static="true"/>      
@@ -123,8 +123,8 @@
     </display>  
   </class>  
   <class id="14" language="java" name="ioio.lib.util.BaseIOIOLooper" project="ABR_client" 
-    file="/Users/nicolasoros/Dropbox/RESEARCH/Programming/ABR_2.1/App-IOIO0330/IOIOLib/target/android/bin/ioiolibandroid.jar" 
-    binary="true" corner="BOTTOM_RIGHT">    
+    file="/Users/nicolasoros/GIT/ABR_libraries/App-IOIO0330/IOIOLib/target/android/bin/ioiolibandroid.jar" binary="true" 
+    corner="BOTTOM_RIGHT">    
     <position x="1202" y="525" width="-1" height="-1"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
       visibility="true">      
@@ -143,123 +143,123 @@
     </display>  
   </interface>  
   <association id="16">    
-    <end type="SOURCE" refId="1" navigable="false">      
-      <attribute id="17" name="the_main_thread">        
-        <position x="287" y="344" width="104" height="18"/>      
-      </attribute>      
-      <multiplicity id="18" minimum="0" maximum="1">        
-        <position x="365" y="330" width="25" height="16"/>      
-      </multiplicity>    
-    </end>    
-    <end type="TARGET" refId="6" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <generalization id="19">    
-    <end type="SOURCE" refId="1"/>    
-    <end type="TARGET" refId="13"/>  
-  </generalization>  
-  <generalization id="20">    
-    <end type="SOURCE" refId="5"/>    
-    <end type="TARGET" refId="14"/>  
-  </generalization>  
-  <association id="21">    
-    <end type="SOURCE" refId="6" navigable="false">      
-      <attribute id="22" name="the_camera">        
-        <position x="806" y="644" width="76" height="18"/>      
-      </attribute>      
-      <multiplicity id="23" minimum="0" maximum="1">        
-        <position x="872" y="616" width="25" height="16"/>      
-      </multiplicity>    
-    </end>    
-    <end type="TARGET" refId="8" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <realization id="24">    
-    <end type="SOURCE" refId="4"/>    
-    <end type="TARGET" refId="11"/>  
-  </realization>  
-  <association id="25">    
     <bendpoint x="136" y="485"/>    
     <end type="SOURCE" refId="1" navigable="false">      
-      <attribute id="26" name="spinner_IP">        
+      <attribute id="17" name="spinner_IP">        
         <position x="152" y="496" width="70" height="18"/>      
       </attribute>      
-      <multiplicity id="27" minimum="0" maximum="1">        
+      <multiplicity id="18" minimum="0" maximum="1">        
         <position x="152" y="518" width="25" height="16"/>      
       </multiplicity>    
     </end>    
     <end type="TARGET" refId="2" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
-  <association id="28">    
-    <end type="SOURCE" refId="6" navigable="false">      
-      <attribute id="29" name="the_ioio">        
-        <position x="812" y="445" width="73" height="18"/>      
-      </attribute>      
-      <multiplicity id="30" minimum="0" maximum="1"/>    
-    </end>    
-    <end type="TARGET" refId="5" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <nesting id="31">    
+  <nesting id="19">    
     <end type="SOURCE" refId="8"/>    
     <end type="TARGET" refId="9"/>  
   </nesting>  
-  <association id="32">    
-    <end type="SOURCE" refId="6" navigable="false">      
-      <attribute id="33" name="the_GPS"/>      
-      <multiplicity id="34" minimum="0" maximum="1"/>    
-    </end>    
-    <end type="TARGET" refId="3" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <generalization id="35">    
-    <end type="SOURCE" refId="6"/>    
-    <end type="TARGET" refId="10"/>  
+  <generalization id="20">    
+    <end type="SOURCE" refId="1"/>    
+    <end type="TARGET" refId="13"/>  
   </generalization>  
-  <realization id="36">    
-    <end type="SOURCE" refId="9"/>    
-    <end type="TARGET" refId="15"/>  
-  </realization>  
-  <association id="37">    
+  <association id="21">    
     <bendpoint x="354" y="377"/>    
     <end type="SOURCE" refId="6" navigable="false">      
-      <attribute id="38" name="the_gui">        
+      <attribute id="22" name="the_gui">        
         <position x="236" y="389" width="52" height="18"/>      
       </attribute>      
-      <multiplicity id="39" minimum="0" maximum="1"/>    
+      <multiplicity id="23" minimum="0" maximum="1"/>    
     </end>    
     <end type="TARGET" refId="1" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
-  <association id="40">    
-    <end type="SOURCE" refId="6" navigable="false">      
-      <attribute id="41" name="the_sensors">        
-        <position x="797" y="145" width="78" height="18"/>      
-      </attribute>      
-      <multiplicity id="42" minimum="0" maximum="1">        
-        <position x="815" y="177" width="25" height="16"/>      
-      </multiplicity>    
-    </end>    
-    <end type="TARGET" refId="4" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <association id="43">    
+  <association id="24">    
     <end type="SOURCE" refId="1" navigable="false">      
-      <attribute id="44" name="spinner_port">        
+      <attribute id="25" name="spinner_port">        
         <position x="50" y="498" width="80" height="18"/>      
       </attribute>      
-      <multiplicity id="45" minimum="0" maximum="1">        
+      <multiplicity id="26" minimum="0" maximum="1">        
         <position x="104" y="517" width="25" height="16"/>      
       </multiplicity>    
     </end>    
     <end type="TARGET" refId="2" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
-  <realization id="46">    
+  <realization id="27">    
+    <end type="SOURCE" refId="4"/>    
+    <end type="TARGET" refId="11"/>  
+  </realization>  
+  <generalization id="28">    
+    <end type="SOURCE" refId="6"/>    
+    <end type="TARGET" refId="10"/>  
+  </generalization>  
+  <association id="29">    
+    <end type="SOURCE" refId="6" navigable="false">      
+      <attribute id="30" name="the_GPS"/>      
+      <multiplicity id="31" minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" refId="3" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="32">    
+    <end type="SOURCE" refId="6" navigable="false">      
+      <attribute id="33" name="the_ioio">        
+        <position x="828" y="449" width="55" height="18"/>      
+      </attribute>      
+      <multiplicity id="34" minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" refId="5" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="35">    
+    <end type="SOURCE" refId="6" navigable="false">      
+      <attribute id="36" name="the_camera">        
+        <position x="806" y="644" width="76" height="18"/>      
+      </attribute>      
+      <multiplicity id="37" minimum="0" maximum="1">        
+        <position x="860" y="669" width="25" height="16"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" refId="8" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="38">    
+    <end type="SOURCE" refId="1" navigable="false">      
+      <attribute id="39" name="the_main_thread">        
+        <position x="287" y="344" width="104" height="18"/>      
+      </attribute>      
+      <multiplicity id="40" minimum="0" maximum="1">        
+        <position x="365" y="330" width="25" height="16"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" refId="6" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <realization id="41">    
     <end type="SOURCE" refId="3"/>    
     <end type="TARGET" refId="12"/>  
   </realization>  
+  <generalization id="42">    
+    <end type="SOURCE" refId="5"/>    
+    <end type="TARGET" refId="14"/>  
+  </generalization>  
+  <realization id="43">    
+    <end type="SOURCE" refId="9"/>    
+    <end type="TARGET" refId="15"/>  
+  </realization>  
+  <association id="44">    
+    <end type="SOURCE" refId="6" navigable="false">      
+      <attribute id="45" name="the_sensors">        
+        <position x="797" y="145" width="78" height="18"/>      
+      </attribute>      
+      <multiplicity id="46" minimum="0" maximum="1">        
+        <position x="815" y="177" width="25" height="16"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" refId="4" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
   <classifier-display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
     accessors="true" visibility="true">    
     <attributes public="true" package="true" protected="true" private="true" static="true"/>    

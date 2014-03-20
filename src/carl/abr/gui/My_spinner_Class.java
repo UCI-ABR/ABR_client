@@ -49,12 +49,12 @@ package carl.abr.gui;
 
 import java.util.Vector;
 
-import carl.abr.utils.File_RW;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
+import carl.abr.utils.File_RW;
 
 public class My_spinner_Class extends Spinner 
 {

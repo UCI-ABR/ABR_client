@@ -92,9 +92,10 @@ import carl.abr.gui.Main_activity;
 public class Main_thread extends Thread implements IOIOLooperProvider 		// implements IOIOLooperProvider: from IOIOActivity
 {
 	static final String TAG = "main_thread";
+	/** Reference to the main activity*/
 	Main_activity the_gui;	
 
-	/***************************************************************   booleans  ***************************************************************/
+	//***************************************************************   booleans  ***************************************************************/
 	boolean STOP 			= false;
 	boolean RECONNECT_TCP	= true;
 	boolean SENSORS_STARTED	= false;
@@ -108,7 +109,7 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 	boolean RC_MODE 		= true;		// rc mode for robot
 	boolean INVERTED 		= false;	// inverted pwm signal
 
-	/***************************************************************   camera   ***************************************************************/
+	//***************************************************************   camera   ***************************************************************/
 	Camera_feedback the_camera;
 	int idx_size_cam; 					//index used to set size of image from camera	
 	ByteArrayOutputStream byteStream;
@@ -118,8 +119,8 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 	int compression_rate;
 	Mat the_frame,dest, dest2;							//openCV images	
 
-	/*****************************************   IOIO    ***************************************************************/
-	final IOIOAndroidApplicationHelper ioio_helper;
+	//*****************************************   IOIO    ***************************************************************/
+	IOIOAndroidApplicationHelper ioio_helper;	
 	IOIO_thread the_ioio;
 	static int DEFAULT_PWM = 1500, MIN_PWM_MOTOR=1400, MAX_PWM_MOTOR=1600, MIN_PWM_SERVO=1000, MAX_PWM_SERVO=2000;	
 	float pwm_servo = DEFAULT_PWM;
@@ -127,7 +128,7 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 	float IR_right, IR_left, IR_front_left, IR_front_right; 
 	float[] IR_vals, PWM_vals;
 
-	/*****************************************   sensors    ***************************************************************/
+	//*****************************************   sensors  & GPS  ***************************************************************/
 	SensorManager sensorManager;	
 	Sensor compass, accelerometer, gyro;
 	LocationManager locationManager;
@@ -140,43 +141,45 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 	double latitude, longitude, altitude, accuracy;
 	float declination;
 
-	/*****************************************   UDP   ***************************************************************/
-	static int HEADER_SIZE = 5;
-	static int DATAGRAM_MAX_SIZE = 1450 - HEADER_SIZE;	
+	//*****************************************   UDP   ***************************************************************/
+	static int HEADER_SIZE 			= 5;
+	static int DATAGRAM_MAX_SIZE 	= 1450 - HEADER_SIZE;		
 	InetAddress serverAddr;
 	String ip_address_server;	
 	DatagramSocket socket_udp_ioio, socket_udp_sensors, socket_udp_camera;	
 	int port_ioio, port_sensors, port_camera;	
 
-	/*****************************************   TCP   ***************************************************************/
+	//*****************************************   TCP   ***************************************************************/
 	int port_TCP;
 	Socket the_TCP_socket;
 	InetSocketAddress serverAddr_TCP;
 	BufferedWriter out;
 	BufferedReader input;
-	int counter_TCP_check=0;
+	int counter_TCP_check			= 0;
+	static int TCP_CHECK_RATE		= 500;		// check tcp connection to the server every 500 timesteps
+	static int CONNECT_TIMEOUT 		= 5000;		//timeout (ms) for connecting tcp socket
+	static int READ_TIMEOUT 		= 10;		//timeout (ms) when reading on tcp socket...also used like a wait()/sleep() for main loop
 
-	/********************************************************************************************************************************************************************/
-	/***************************************************************   constructor   ***************************************************************/
-	/********************************************************************************************************************************************************************/
+	//********************************************************************************************************************************************************************/
+	//***************************************************************   constructor   ***************************************************************/
+	//********************************************************************************************************************************************************************/
 	public Main_thread(Main_activity gui)
 	{
 		the_gui = gui;
 		ip_address_server = the_gui.IP_server;	
 		port_TCP = the_gui.port_TCP;
-
-		ioio_helper = new IOIOAndroidApplicationHelper(the_gui, this);	// from IOIOActivity
-		ioio_helper.create();											// from IOIOActivity	
 	}
 
-	/********************************************************************************************************************************************************************/
-	/***************************************************************   main  loop   ***************************************************************/
-	/********************************************************************************************************************************************************************/
+	//********************************************************************************************************************************************************************/
+	//***************************************************************   main  loop   ***************************************************************/
+	//********************************************************************************************************************************************************************/
 	@Override
-	public final void run() 
+	public final void run() //function called when: the_main_thread.start();  is called in the Main_activity
 	{	
-		load_opencv();	// load opencv libraries for image processing
-		start_tcp();	// connect to the server
+		ioio_helper = new IOIOAndroidApplicationHelper(the_gui, this);	// create ioio_helper used to connect to the ioio (copied from IOIOActivity)
+		ioio_helper.create();											// from IOIOActivity			
+		load_opencv();													// load opencv libraries for image processing
+		start_tcp();													// connect to the server
 
 		while(STOP == false)
 		{		
@@ -195,7 +198,7 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 				send_camera_data();
 				send_ioio_data();
 			}
-			send_keepalive_tcp();
+			check_tcp();		
 			read_tcp();					//read tcp message (timeout 20ms)... set RECONNECT_TCP=true if problem
 
 			if(the_ioio != null) the_ioio.set_PWM_values(pwm_motor, pwm_servo);			//set pwm values, wake up ioio thread 
@@ -210,6 +213,11 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 		STOP = true;
 	}
 
+	/** Stop camera, ioio and sensors (if running), by calling {@link #stop_camera()} , {@link #stop_IOIO()} and {@link #stop_sensors()}.
+	 * Called when tcp connection is lost in {@link #check_tcp()}, and when the thread is stopping in {@link #run()}.
+	 * @see #stop_camera()
+	 * @see #stop_IOIO() 
+	 * @see #stop_sensors()*/
 	private void stop_all()
 	{
 		stop_camera();
@@ -217,25 +225,29 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 		stop_IOIO();
 	}
 
-	/********************************************************************************************************************************************************************/
-	/***************************************************************   TCP   ***************************************************************/	
-	/********************************************************************************************************************************************************************/
+	//********************************************************************************************************************************************************************/
+	//***************************************************************   TCP   ***************************************************************/	
+	//********************************************************************************************************************************************************************/
+	/** Function will try to connect to the server indefinitely. Creates and open a tcp socket, and input and output streams.
+	 * If connected, sends robot/phone parameters to the server by calling {@link #send_param_tcp()}.
+	 * @see #send_param_tcp() 
+	 * @param no param	 */
 	private void start_tcp()
 	{
-		while(RECONNECT_TCP==true && STOP==false)			//try to reconnect
+		while(RECONNECT_TCP==true && STOP==false)			//try to (re)connect
 		{
 			serverAddr_TCP = new InetSocketAddress(ip_address_server,port_TCP);
 			try 
 			{				
 				the_TCP_socket = new Socket();	
-				the_TCP_socket.connect(serverAddr_TCP, 5000);				//connect timeout  (ms)
-				the_TCP_socket.setSoTimeout(10);							//read timeout  (ms)
+				the_TCP_socket.connect(serverAddr_TCP, CONNECT_TIMEOUT);				//connect with timeout  (ms)
+				the_TCP_socket.setSoTimeout(READ_TIMEOUT);								//read with timeout  (ms)
 				out = new BufferedWriter(new OutputStreamWriter(the_TCP_socket.getOutputStream()));
 				input = new BufferedReader(new InputStreamReader(the_TCP_socket.getInputStream()));
-				send_param_tcp();
-				RECONNECT_TCP = false;				
+				
+				RECONNECT_TCP = !send_param_tcp();		//send parameters of the phone/robot... if problem, reconnect
 
-				the_gui.runOnUiThread(new Runnable() 
+				the_gui.runOnUiThread(new Runnable() //update gui on its own thread
 				{
 					@Override
 					public void run() 
@@ -247,11 +259,13 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 			catch(java.io.IOException e) 
 			{
 				RECONNECT_TCP = true;
-				Log.e("tcp","error connect: " + e);
+//				Log.e("tcp","error connect: " + e);
 			}
 		}
 	}
 
+	/**Close input and output streams, and close the tcp socket.
+	 * @param no param	 */
 	private void stop_tcp()
 	{
 		try 
@@ -264,7 +278,12 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 		Log.i("tcp","tcp client stopped ");
 	}
 	
-	private void send_param_tcp()
+
+	/**Send parameters of the phone/robot to the server (name, supported resolution camera...).
+	 * Should only be called once (the first time the robot connects to the server).  
+	 * @return true if message correctly sent, false otherwise
+	 * @param no param	 */
+	private boolean send_param_tcp()
 	{
 		String message_TCP = new String();
 		message_TCP = "PHONE/" + Build.MODEL + " " + Build.MANUFACTURER + " " + Build.PRODUCT;		
@@ -288,103 +307,122 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 			
 			out.write(message_TCP);
 			out.flush();
+			return true;
 		}
-		catch(Exception e){Log.e(TAG, "error camera");}
+		catch(Exception e)
+		{
+			Log.e(TAG, "error send_param_tcp" + e); 
+			return false;
+		}
 	}
 	
-	private void send_keepalive_tcp()
+	/**Checks tcp connection by trying to send the message "TCP_CHECK" to the server every KEEPALIVE_MAX_COUNT (e.g. 500) timesteps.
+	 * If disconnected, function will stop everything and try to reconnect to the server using: {@link #stop_tcp()}, {@link #stop_all()}, then {@link #start_tcp()}
+	 * <p> The server should send back "TCP_OK" but we don't really care about it here, see {@link #read_tcp()}
+	 * @see {@link #read_tcp()} , {@link #stop_tcp()}, {@link #stop_all()}, {@link #start_tcp()} */	
+	private void check_tcp()
 	{
 		counter_TCP_check++;
-		if(counter_TCP_check==500)	
+		if(counter_TCP_check==TCP_CHECK_RATE)	
 		{
 			counter_TCP_check=0;
 			try 
 			{
 				out.write("TCP_CHECK");
-				out.flush();
+				out.flush();				
 			} 
-			catch (IOException e) 					//if connection is lost	
+			catch (IOException e) 					// if connection is lost	...cannot send/write on socket
 			{	
 				Log.e("tcp","error write: ", e); 
-				stop_tcp();							//close properly
+				RECONNECT_TCP = true;				
+			} 		
+			
+			if(RECONNECT_TCP == true)
+			{
+				Log.i("tcp","reconnect");
+				stop_tcp();							// close properly
 				stop_all();							// stop everything
-				RECONNECT_TCP = true;
 				start_tcp();						// reconnect to server
-			} 			
+			}
 		}	
 	}
 
-	private void read_tcp()
+	/**Read tcp socket and perform action corresponding to message: start/stop camera, ioio, sensors, set pwm values, compression rate, mode.
+	 * Also see if the server sent back "TCP_OK" message after sending "TCP_CHECK" in {@link #check_tcp()}
+	 * @return true if it receives a known command, false otherwise
+	 * @see #check_tcp()*/	
+	private boolean read_tcp()
 	{
-		if(RECONNECT_TCP==false)
-		{
-			String st=null;		
-			try
-			{					
-				st = input.readLine();
-			}
-			catch (java.net.SocketTimeoutException e) {}	//at every timeout
-			catch (IOException e) 	{		Log.e("tcp","error read: ", e);	}
-
-			if(st != null)
-			{	        	
-				final String[]sss= st.split("/");
-				if(sss[0].matches("TCP_OK") == true)
-				{
-					RECONNECT_TCP = false;	//the server replied so no need to reconnect
-				}
-				else if(sss[0].matches("PWM") == true)
-				{		
-					pwm_motor = Integer.parseInt(sss[1]);
-					pwm_servo = Integer.parseInt(sss[2]);
-				}
-				else if(sss[0].matches("CAMERA_ON") == true)
-				{	        		
-					Log.i(TAG,"start cam");	      
-					port_camera = Integer.parseInt(sss[1]);
-					idx_size_cam = Integer.parseInt(sss[2]);
-					start_camera();
-				}
-				else if(sss[0].matches("CAMERA_OFF") == true)
-				{
-					Log.i(TAG,"stop cam ");			
-					stop_camera();
-				}
-				else if(sss[0].matches("IMG_RATE") == true)
-				{	
-					set_compression_rate(Integer.parseInt(sss[1]));
-				}
-				else if(sss[0].matches("SENSORS_ON") == true)
-				{
-					Log.i(TAG,"start sensors ");
-					port_sensors = Integer.parseInt(sss[1]);
-					start_sensors();
-				}
-				else if(sss[0].matches("SENSORS_OFF") == true)
-				{
-					Log.i(TAG,"stop sensors ");
-					stop_sensors();
-				}
-				else if(sss[0].matches("IOIO_ON") == true)
-				{				
-					Log.i(TAG,"start ioio");	
-					port_ioio = Integer.parseInt(sss[1]);
-					INVERTED = (Byte.parseByte(sss[2])!=0);
-					RC_MODE = (Byte.parseByte(sss[3])!=0);
-					start_IOIO();
-				}
-				else if(sss[0].matches("IOIO_OFF") == true)
-				{
-					Log.i(TAG,"stop ioio ");	
-					stop_IOIO();
-				}
-				else if(sss[0].matches("MODE") == true)
-				{
-					Log.i(TAG,"change mode");
-					RC_MODE = (Byte.parseByte(sss[1])!=0);
-				}
-			}
+		String st=null;		
+		boolean output = false; 
+		
+		try
+		{					
+			st = input.readLine();
 		}
+		catch (java.net.SocketTimeoutException e) {}	//exception will be caught at every timeout (so very often)
+		catch (IOException e) {	Log.e("tcp","error read: ", e);	}
+
+		if(st != null)
+		{	        	
+			final String[]sss= st.split("/");
+			output = true;
+			
+			if(sss[0].matches("TCP_OK") == true){}	//the server replied...good but don't really care actually
+			else if(sss[0].matches("PWM") == true)
+			{		
+				pwm_motor = Integer.parseInt(sss[1]);
+				pwm_servo = Integer.parseInt(sss[2]);
+			}
+			else if(sss[0].matches("CAMERA_ON") == true)
+			{	        		
+				Log.i(TAG,"start cam");	      
+				port_camera = Integer.parseInt(sss[1]);
+				idx_size_cam = Integer.parseInt(sss[2]);
+				start_camera();
+			}
+			else if(sss[0].matches("CAMERA_OFF") == true)
+			{
+				Log.i(TAG,"stop cam ");			
+				stop_camera();
+			}
+			else if(sss[0].matches("IMG_RATE") == true)
+			{	
+				set_compression_rate(Integer.parseInt(sss[1]));
+			}
+			else if(sss[0].matches("SENSORS_ON") == true)
+			{
+				Log.i(TAG,"start sensors ");
+				port_sensors = Integer.parseInt(sss[1]);
+				start_sensors();
+			}
+			else if(sss[0].matches("SENSORS_OFF") == true)
+			{
+				Log.i(TAG,"stop sensors ");
+				stop_sensors();
+			}
+			else if(sss[0].matches("IOIO_ON") == true)
+			{				
+				Log.i(TAG,"start ioio");	
+				port_ioio = Integer.parseInt(sss[1]);
+				INVERTED = (Byte.parseByte(sss[2])!=0);
+				RC_MODE = (Byte.parseByte(sss[3])!=0);
+				start_IOIO();
+			}
+			else if(sss[0].matches("IOIO_OFF") == true)
+			{
+				Log.i(TAG,"stop ioio ");	
+				stop_IOIO();
+			}
+			else if(sss[0].matches("MODE") == true)
+			{
+				Log.i(TAG,"change mode");
+				RC_MODE = (Byte.parseByte(sss[1])!=0);
+			}
+			else
+				output = false;		//if unknown command sent
+		}
+		return output;
 	}
 
 	/********************************************************************************************************************************************************************/

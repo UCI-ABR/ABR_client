@@ -66,22 +66,19 @@ public class Main_activity extends Activity
 {
 	final String tag = "Main activity";
 	Context the_context;
+	
+	public Main_thread the_main_thread;	//main thread running the main loop (get data from sensors camera ioio, process data, send data ,set motor command ioio)
+	public String IP_server = null;
+	public int port_TCP;
 
 	/***************************************************************   GUI stuff   **********************************************************/
+	PowerManager.WakeLock wake;			//used to keep screen on
 	My_spinner_Class spinner_IP, spinner_port;
 	EditText ip_text, port_text;
 	Button button_add_IP, button_delete_IP, button_add_port, button_delete_port;
-	public ToggleButton button_connect;	
-	PowerManager.WakeLock wake;
+	public ToggleButton button_connect;		
 
-	/***************************************************************   Networking    *********************************************************/
-	public String IP_server = null;
-	public int port_TCP;
 	
-	/***************************************************************   Threads   *************************************************************/
-	public Main_thread the_main_thread;
-
-		
 	/**************************************************************************************************************************************/
 	/********************************************************** activity / GUI ************************************************************/
 	/**************************************************************************************************************************************/
@@ -231,7 +228,7 @@ public class Main_activity extends Activity
 	public void Start_TCP_client()
 	{		
 		the_main_thread = new Main_thread(this);
-		the_main_thread.start();
+		the_main_thread.start();					//start thread...calls run function
 	}
 
 	public void stop_all()
