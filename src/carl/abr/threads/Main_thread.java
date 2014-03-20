@@ -271,7 +271,7 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 			catch(java.io.IOException e) 
 			{
 				RECONNECT_TCP = true;
-//				Log.e("tcp","error connect: ", e);
+				Log.e("tcp","error connect: " + e);
 			}
 		}
 	}

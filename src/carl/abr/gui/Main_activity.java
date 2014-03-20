@@ -115,7 +115,7 @@ public class Main_activity extends Activity
 		setContentView(R.layout.main_acti);
 		the_context = this.getApplicationContext();
 
-		if (!OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_5, this, mLoaderCallback)) // load opencv 2.4.5 libraries
+		if (!OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_8, this, mLoaderCallback)) // load opencv 2.4.5 libraries
 			Log.e(tag, "Cannot connect to OpenCV Manager");		
 
 		ip_text = (EditText) findViewById(R.id.txt_IP);
