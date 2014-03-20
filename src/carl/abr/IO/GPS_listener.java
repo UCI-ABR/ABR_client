@@ -47,31 +47,27 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package carl.abr.IO;
 
-import carl.abr.gui.Main_activity;
 import android.location.Location;
 import android.location.LocationListener;
 import android.os.Bundle;
 import android.os.SystemClock;
 
 public class GPS_listener implements LocationListener
-{
+{	
 	private static final int ONE_MINUTES = 1000 * 60 * 1;
 	Location lastKnownLocation_GPS;
-	Main_activity main_acti;
 	boolean NO_GPS = true;
 	long mLastLocationMillis=0;
-	private boolean isGPSFix=false;
 	boolean NEW_LOCATION;
 
 	public long cycle=-10, time;
 
-	public GPS_listener(Main_activity act)
+	public GPS_listener()
 	{
 		super();
-		main_acti = act;
 		NEW_LOCATION = false;
 	}
-
+	
 	public synchronized Location get_gps_loc()
 	{
 //		long nb = SystemClock.elapsedRealtime() - mLastLocationMillis;

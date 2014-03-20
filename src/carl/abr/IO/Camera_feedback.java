@@ -52,7 +52,6 @@ import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.hardware.Camera.PreviewCallback;
 import android.hardware.Camera.Size;
-import android.os.SystemClock;
 import android.util.Log;
 
 public class Camera_feedback

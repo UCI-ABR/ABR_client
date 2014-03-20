@@ -62,15 +62,18 @@ public class My_spinner_Class extends Spinner
 	String file_name;
 	
 	// constructors (each calls initialize)
-	public My_spinner_Class(Context context) {
+	public My_spinner_Class(Context context) 
+	{
 		super(context);
 //		this.initialise();
 	}
-	public My_spinner_Class(Context context, AttributeSet attrs) {
+	public My_spinner_Class(Context context, AttributeSet attrs) 
+	{
 		super(context, attrs);
 //		this.initialise();
 	}
-	public My_spinner_Class(Context context, AttributeSet attrs, int defStyle) {
+	public My_spinner_Class(Context context, AttributeSet attrs, int defStyle) 
+	{
 		super(context, attrs, defStyle);
 //		this.initialise();
 	}
@@ -139,7 +142,8 @@ public class My_spinner_Class extends Spinner
 	}
 	
 	// remove all items from the list and disable it
-	public void clearItems() {
+	public void clearItems() 
+	{
 		arrayAdapter.clear();
 		this.setEnabled(false);
 	}

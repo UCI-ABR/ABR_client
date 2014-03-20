@@ -47,9 +47,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package carl.abr.threads;
 
-import android.os.SystemClock;
-import android.util.Log;
-import carl.abr.gui.Main_activity;
 import ioio.lib.api.AnalogInput;
 import ioio.lib.api.PwmOutput;
 import ioio.lib.api.exception.ConnectionLostException;
@@ -57,11 +54,10 @@ import ioio.lib.util.BaseIOIOLooper;
 
 public class IOIO_thread extends BaseIOIOLooper 
 {
-	private static final String TAG = "IOIO_thread";
+//	private static final String TAG = "IOIO_thread";
 
 	PwmOutput motor_output, servo_output;
 	AnalogInput IR_left, IR_right, IR_front_left, IR_front_right;
-	Main_activity the_gui;					// reference to the main activity
 	float pwm_M, pwm_S;
 	boolean INVERTED, AUTO;	
 
@@ -73,9 +69,8 @@ public class IOIO_thread extends BaseIOIOLooper
 	public long old_time,cycle, time;
 	public boolean UPDATED = false;
 
-	public IOIO_thread(Main_activity gui)
+	public IOIO_thread()
 	{		
-		the_gui = gui;
 		INVERTED = false;
 
 		IR_values  = new float[5];

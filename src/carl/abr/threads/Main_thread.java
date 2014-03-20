@@ -47,6 +47,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package carl.abr.threads;
 
+import ioio.lib.util.IOIOLooper;
+import ioio.lib.util.IOIOLooperProvider;
+import ioio.lib.util.android.IOIOAndroidApplicationHelper;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
@@ -59,9 +62,17 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.List;
-import java.util.Vector;
-
-import org.opencv.android.Utils;
+import android.content.Context;
+import android.hardware.Camera;
+import android.hardware.GeomagneticField;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
+import android.hardware.Camera.Size;
+import android.location.Location;
+import android.location.LocationManager;
+import android.os.Build;
+import android.os.SystemClock;
+import android.util.Log;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
@@ -69,56 +80,57 @@ import org.opencv.core.MatOfInt;
 import org.opencv.highgui.Highgui;
 import org.opencv.imgproc.Imgproc;
 
-import android.graphics.Bitmap;
-import android.hardware.Camera;
-import android.hardware.GeomagneticField;
-import android.hardware.Camera.Size;
-import android.location.Location;
-import android.os.Build;
-import android.os.SystemClock;
-import android.util.Log;
 import carl.abr.IO.Camera_feedback;
 import carl.abr.IO.GPS_listener;
 import carl.abr.IO.Sensors_listener;
 import carl.abr.gui.Main_activity;
-import carl.abr.utils.File_RW;
 
-public class Main_thread extends Thread 
+public class Main_thread extends Thread implements IOIOLooperProvider 		// implements IOIOLooperProvider: from IOIOActivity
 {
 	static final String TAG = "main_thread";
 	Main_activity the_gui;	
-	boolean STOP = false, NEW_IMA=true, SENSORS_SOCKET=false, RECONNECT_TCP=true;
-	long old_time,cycle, time;
-	float update_rate;
-	//	Vector<Long> cycles;
+
+	/***************************************************************   booleans  ***************************************************************/
+	boolean STOP 			= false;
+	boolean RECONNECT_TCP	= true;
+	boolean SENSORS_STARTED	= false;
+	boolean IOIO_STARTED	= false;
+	boolean CAMERA_STARTED	= false;
+	boolean NEW_IMA			= true;		//first time, image will be created, then modified
+	boolean NEW_FRAME		= false;
+	boolean NEW_DATA_IOIO	= false;	
+	boolean NEW_DATA_GPS	= false;
+	boolean NEW_DECLI		= false;	//only get earth declination once
+	boolean RC_MODE 		= true;		// rc mode for robot
+	boolean INVERTED 		= false;	// inverted pwm signal
 
 	/***************************************************************   camera   ***************************************************************/
-	Camera_feedback the_cam;
-	Bitmap the_image;
+	Camera_feedback the_camera;
+	int idx_size_cam; 					//index used to set size of image from camera	
 
-	/***************************************************************  image processing/packeting************************************************************/
 	ByteArrayOutputStream byteStream;
 	byte frame_nb = 0;	
 	int width_ima, height_ima,packetCount,nb_packets,size;
 	byte[] picData;
 	int compression_rate;
-	Mat m,dest, dest2;							//openCV image
-	boolean NEW_FRAME;
+	Mat the_frame,dest, dest2;							//openCV images	
 
 	/*****************************************   IOIO    ***************************************************************/
-	IOIO_thread ioio_thread;
+	final IOIOAndroidApplicationHelper ioio_helper;
+	IOIO_thread the_ioio;
 	static int DEFAULT_PWM = 1500, MIN_PWM_MOTOR=1400, MAX_PWM_MOTOR=1600, MIN_PWM_SERVO=1000, MAX_PWM_SERVO=2000;	
-	float IR_right, IR_left, IR_front_left, IR_front_right; //IR_front	
 	float pwm_servo = DEFAULT_PWM;
 	float pwm_motor = DEFAULT_PWM;	
-	boolean RC_MODE, EXPLORE_MODE;	
+	float IR_right, IR_left, IR_front_left, IR_front_right; 
 	float[] IR_vals, PWM_vals;
-	String string_ioio_vals;
-	boolean NEW_DATA_IOIO;
+	String string_ioio_vals;	
 
 	/*****************************************   sensors    ***************************************************************/
+	SensorManager sensorManager;	
+	Sensor compass, accelerometer, gyro;
+	LocationManager locationManager;
 	Sensors_listener the_sensors;
-	GPS_listener GPS;
+	GPS_listener the_GPS;
 	float[] acceleration;
 	float[] orientation;
 	float[] gyroscope;
@@ -126,17 +138,14 @@ public class Main_thread extends Thread
 	Location lastKnownLocation_GPS, target_location;
 	double latitude, longitude, altitude, accuracy;
 	float declination;
-	boolean DECLI;
-	boolean NEW_DATA_GPS;
 
 	/*****************************************   UDP   ***************************************************************/
+	static int HEADER_SIZE = 5;
+	static int DATAGRAM_MAX_SIZE = 1450 - HEADER_SIZE;	
 	InetAddress serverAddr;
 	String ip_address_server;	
 	DatagramSocket socket_udp_ioio, socket_udp_sensors, socket_udp_camera;	
-	int port_ioio, port_sensors, port_camera;
-	int size_p=0;
-	static int HEADER_SIZE = 5;
-	static int DATAGRAM_MAX_SIZE = 1450 - HEADER_SIZE;		
+	int port_ioio, port_sensors, port_camera;	
 
 	/*****************************************   TCP   ***************************************************************/
 	int port_TCP;
@@ -145,49 +154,42 @@ public class Main_thread extends Thread
 	InetSocketAddress serverAddr_TCP;
 	BufferedWriter out;
 	BufferedReader input;
-	boolean CLOSED_SOCKET=false;
 	int counter_TCP_check=0;
 
-	/***************************************************************   auto drive   ***************************************************************/
-	// Warren and Fajen constants made smaller
-	static final double k0 = 2.5;
-	static final double c3 = 4;
-	static final double c4 = 2;
-
-	static final float TOOCLOSE = 0.2f;
-	static final float ALLCLEAR = 0.5f;
-	static final double maxIR = 2.5;
-	static final double speedConst = -5.0;
-	boolean GOING_FORWARD = true;
-	double[] ang, dist;
-	double speed, turn, minDist;
-
-
-	public Main_thread(Main_activity gui, String msg_tcp)
+	public Main_thread(Main_activity gui)
 	{
-		the_gui = gui;		
+		the_gui = gui;
 		ip_address_server = the_gui.IP_server;	
-		message_TCP = new String(msg_tcp);
 		port_TCP = the_gui.port_TCP;
+
+		ioio_helper = new IOIOAndroidApplicationHelper(the_gui, this);			// from IOIOActivity
+		ioio_helper.create();	// from IOIOActivity		
+				
+		message_TCP = new String();
 		string_sensors_vals = new String();
 		string_ioio_vals = new String();
+		
+		message_TCP = "PHONE/" + Build.MODEL + " " + Build.MANUFACTURER + " " + Build.PRODUCT;		
 
-		//autodrive
-		ang = new double[4];
-		dist = new double[4];		
-		minDist = 9999.0;	
+		try	// get supported sizes of camera...to send to the server
+		{
+			Camera mCamera = Camera.open();        
+			Camera.Parameters parameters = mCamera.getParameters(); 
+			List<Size> mSupportedPreviewSizes = parameters.getSupportedPreviewSizes();
+			Size a_size;
 
-		NEW_FRAME = false;
-		NEW_DATA_IOIO = false;
-		NEW_DATA_GPS = false;
+			for(int i=0;i<mSupportedPreviewSizes.size();i++)
+			{
+				a_size = mSupportedPreviewSizes.get(i);
+				message_TCP += "/" + Integer.toString(a_size.width) + "x"+ Integer.toString(a_size.height); 
+			}
+			message_TCP += "/\n";
 
-		//		cycles = new Vector<Long>();
+			if (mSupportedPreviewSizes != null) {Log.i(TAG, "nb supported sizes: " + mSupportedPreviewSizes.size());}
+			mCamera.release(); 
+		}
+		catch(Exception e){Log.e(TAG, "error camera");}
 	}
-
-	public synchronized void stop_thread()
-	{
-		STOP = true;
-	}	
 
 	/********************************************************************************************************************************************************************/
 	/***************************************************************   main  loop   ***************************************************************/
@@ -197,48 +199,42 @@ public class Main_thread extends Thread
 	{	
 		start_tcp();	// connect to the server
 
-		old_time = SystemClock.elapsedRealtime();
-
 		while(STOP == false)
 		{		
 			synchronized(this)					//thread cannot be stopped by activity (user) while running this part of the code
 			{
 				//get (update) data
-				get_sensors_values();
-				get_camera_frame();
-				get_ioio_vals();
+				get_sensors_data();
+				get_camera_data();
+				get_ioio_data();
 
 				//do stuff with data here...
-				if (EXPLORE_MODE == true)	autoDriveWF();
+				//				if (EXPLORE_MODE == true)	autoDriveWF();
 
 				//send data to server (udp sockets)
 				send_sensors_data();
 				send_camera_data();
 				send_ioio_data();
 			}
-			read_socket_tcp();					//read tcp message (timeout 20ms)... set RECONNECT_TCP=true if problem
+			read_tcp();					//read tcp message (timeout 20ms)... set RECONNECT_TCP=true if problem
 
-			if(ioio_thread != null) ioio_thread.set_PWM_values(pwm_motor, pwm_servo);			//set pwm values, wake up ioio thread 
-
-			//			if(the_gui.CAMERA_STARTED == true || the_gui.SENSORS_STARTED == true || the_gui.IOIO_STARTED == true)
-			//			{
-			//				time = SystemClock.elapsedRealtime();
-			//				cycle = time - old_time;			
-			//				old_time = time;
-			//				cycles.add(cycle);
-			//			}
-			//			Log.i(TAG,"cycle: " + cycle);
+			if(the_ioio != null) the_ioio.set_PWM_values(pwm_motor, pwm_servo);			//set pwm values, wake up ioio thread 
 		}
 
 		stop_tcp();
 		stop_all();
 	}
+	
+	public synchronized void stop_thread()
+	{
+		STOP = true;
+	}
 
 	private void stop_all()
 	{
-		stop_camera_udp();
-		stop_sensors_udp();
-		stop_IOIO_udp();
+		stop_camera();
+		stop_sensors();
+		stop_IOIO();
 	}
 
 	/********************************************************************************************************************************************************************/
@@ -253,22 +249,29 @@ public class Main_thread extends Thread
 			{				
 				the_TCP_socket = new Socket();	
 				the_TCP_socket.connect(serverAddr_TCP, 5000);				//connect timeout  (ms)
-				//				the_TCP_socket.setSoTimeout(5);				//read timeout  (ms)
 				the_TCP_socket.setSoTimeout(10);							//read timeout  (ms)
 				out = new BufferedWriter(new OutputStreamWriter(the_TCP_socket.getOutputStream()));
 				input = new BufferedReader(new InputStreamReader(the_TCP_socket.getInputStream()));
 
 				RECONNECT_TCP = false;
-				run_on_UI(7);
+
+				the_gui.runOnUiThread(new Runnable() 
+				{
+					@Override
+					public void run() 
+					{
+						if(the_gui.button_connect.isChecked()==false) the_gui.button_connect.setChecked(true);                
+					}
+				}); 
 
 				out.write(message_TCP);
 				out.flush();
-//				Log.i("tcp","send msg " + message_TCP);
+				//				Log.i("tcp","send msg " + message_TCP);
 			}
 			catch(java.io.IOException e) 
 			{
 				RECONNECT_TCP = true;
-				//				Log.e("tcp","error connect: ", e);
+//				Log.e("tcp","error connect: ", e);
 			}
 		}
 	}
@@ -282,11 +285,10 @@ public class Main_thread extends Thread
 			the_TCP_socket.close();				//Close connection
 		} 
 		catch (IOException e) {	Log.e("tcp","error close: ", e);}
-
 		Log.i("tcp","tcp client stopped ");
 	}
 
-	private void read_socket_tcp()
+	private void read_tcp()
 	{
 		counter_TCP_check++;
 		if(counter_TCP_check==500)	//every 5s approx.
@@ -294,7 +296,6 @@ public class Main_thread extends Thread
 			counter_TCP_check=0;
 			try 
 			{
-//				Log.i("tcp","send tcp check");
 				out.write("TCP_CHECK");
 				out.flush();
 			} 
@@ -303,7 +304,6 @@ public class Main_thread extends Thread
 				Log.e("tcp","error write: ", e); 
 				stop_tcp();							//close properly
 				stop_all();
-				run_on_UI(6);
 				RECONNECT_TCP = true;
 				start_tcp();
 			} 			
@@ -325,7 +325,6 @@ public class Main_thread extends Thread
 				if(sss[0].matches("TCP_OK") == true)
 				{
 					RECONNECT_TCP = false;	//the server replied so no need to reconnect
-					//				Log.i("tcp","tcp server still connected");
 				}
 				else if(sss[0].matches("PWM") == true)
 				{		
@@ -336,15 +335,13 @@ public class Main_thread extends Thread
 				{	        		
 					Log.i(TAG,"start cam");	      
 					port_camera = Integer.parseInt(sss[1]);
-					the_gui.idx_size_cam = Integer.parseInt(sss[2]);					
-					run_on_UI(0);
-					start_camera_udp();
+					idx_size_cam = Integer.parseInt(sss[2]);
+					start_camera();
 				}
 				else if(sss[0].matches("CAMERA_OFF") == true)
 				{
-					Log.i(TAG,"stop cam ");					
-					run_on_UI(1);			
-					stop_camera_udp();
+					Log.i(TAG,"stop cam ");			
+					stop_camera();
 				}
 				else if(sss[0].matches("IMG_RATE") == true)
 				{	
@@ -354,112 +351,91 @@ public class Main_thread extends Thread
 				{
 					Log.i(TAG,"start sensors ");
 					port_sensors = Integer.parseInt(sss[1]);
-					run_on_UI(2);
-					start_sensors_udp();
+					start_sensors();
 				}
 				else if(sss[0].matches("SENSORS_OFF") == true)
 				{
 					Log.i(TAG,"stop sensors ");
-					run_on_UI(3);
-					stop_sensors_udp();
+					stop_sensors();
 				}
 				else if(sss[0].matches("IOIO_ON") == true)
 				{				
 					Log.i(TAG,"start ioio");	
 					port_ioio = Integer.parseInt(sss[1]);
-					the_gui.INVERTED = (Byte.parseByte(sss[2])!=0);
+					INVERTED = (Byte.parseByte(sss[2])!=0);
 					RC_MODE = (Byte.parseByte(sss[3])!=0);
-					EXPLORE_MODE = (Byte.parseByte(sss[4])!=0);
-					run_on_UI(4);
-					start_IOIO_udp();
+					start_IOIO();
 				}
 				else if(sss[0].matches("IOIO_OFF") == true)
 				{
 					Log.i(TAG,"stop ioio ");	
-					run_on_UI(5);
-					stop_IOIO_udp();
+					stop_IOIO();
 				}
 				else if(sss[0].matches("MODE") == true)
 				{
 					Log.i(TAG,"change mode");
 					RC_MODE = (Byte.parseByte(sss[1])!=0);
-					EXPLORE_MODE = (Byte.parseByte(sss[2])!=0);
 				}
 			}
 		}
 	}
-
-	private void run_on_UI(final int nb)
-	{
-		the_gui.runOnUiThread(new Runnable() 
-		{
-			@Override
-			public void run() 
-			{
-				switch(nb)
-				{
-				case 0:	the_gui.start_video(); 
-				break;
-
-				case 1:	the_gui.stop_video(); 
-				break;
-
-				case 2:	the_gui.start_sensors();      
-				break;
-
-				case 3:	the_gui.stop_sensors();
-				break;
-
-				case 4:	the_gui.start_IOIO();
-				break;
-
-				case 5:	the_gui.stop_IOIO();      
-				break;		
-
-				case 6: //if(the_gui.button_connect.isChecked()) the_gui.button_connect.setChecked(false);
-					the_gui.stop_all2();
-					break;	
-
-				case 7: if(the_gui.button_connect.isChecked()==false) the_gui.button_connect.setChecked(true);
-				break;	
-				}                      
-			}
-		}); 
-	}
-
+	
 	/********************************************************************************************************************************************************************/
 	/***************************************************************   sensors   ***************************************************************/	
 	/********************************************************************************************************************************************************************/
-	private void start_sensors_udp()
+	private void start_sensors()
 	{
 		try
 		{
+			the_sensors = new Sensors_listener();
+			the_GPS = new GPS_listener();	
+
+			the_gui.runOnUiThread(new Runnable() 
+			{
+				@Override
+				public void run() 
+				{
+					sensorManager = (SensorManager) the_gui.getSystemService(Context.SENSOR_SERVICE);
+					compass = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);	
+					accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+					gyro = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+					sensorManager.registerListener(the_sensors, compass, SensorManager.SENSOR_DELAY_FASTEST);
+					sensorManager.registerListener(the_sensors, accelerometer, SensorManager.SENSOR_DELAY_FASTEST);
+					sensorManager.registerListener(the_sensors, gyro, SensorManager.SENSOR_DELAY_FASTEST);
+
+					locationManager = (LocationManager) the_gui.getSystemService(Context.LOCATION_SERVICE);	
+					locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, the_GPS);
+				}
+			});
+
 			serverAddr = InetAddress.getByName(ip_address_server);
 			socket_udp_sensors = new DatagramSocket();
+
+			SENSORS_STARTED = true;
 		}
 		catch (Exception exception) {	Log.e(TAG, "Error: ", exception);}		
-		DECLI = false;
+		NEW_DECLI = false;
 	}
 
-	private void stop_sensors_udp()
+	private void stop_sensors()
 	{
 		if(socket_udp_sensors!= null) 
 		{
+			sensorManager.unregisterListener(the_sensors);
+			locationManager.removeUpdates(the_GPS);	
 			socket_udp_sensors.close();
+			SENSORS_STARTED = false;
 		}
 	}
 
-	private void get_sensors_values() 		//get new values from sensors
+	private void get_sensors_data() 		//get new values from sensors
 	{
-		if(the_gui.SENSORS_STARTED == true)
+		if(SENSORS_STARTED == true)
 		{
-			the_sensors = the_gui.sensor_listener;
-			GPS = the_gui.locationListener_GPS;
-
 			orientation = the_sensors.get_orientation();
 			acceleration = the_sensors.get_acceleration();	
 			gyroscope = the_sensors.get_gyro_values();			
-			lastKnownLocation_GPS = GPS.get_gps_loc();
+			lastKnownLocation_GPS = the_GPS.get_gps_loc();
 
 			if(lastKnownLocation_GPS != null)
 			{
@@ -468,9 +444,9 @@ public class Main_thread extends Thread
 				altitude = lastKnownLocation_GPS.getAltitude();
 				accuracy = lastKnownLocation_GPS.getAccuracy();
 
-				if(DECLI==false)		//only get declination once...the robot won't move really far
+				if(NEW_DECLI==false)		//only get declination once...the robot won't move really far
 				{
-					DECLI = true;
+					NEW_DECLI = true;
 					GeomagneticField geoField;
 					geoField = new GeomagneticField(
 							Double.valueOf(lastKnownLocation_GPS.getLatitude()).floatValue(),
@@ -488,7 +464,7 @@ public class Main_thread extends Thread
 
 	private void send_sensors_data() 
 	{
-		if(the_gui.SENSORS_STARTED == true && socket_udp_sensors.isClosed()==false)
+		if(SENSORS_STARTED == true && socket_udp_sensors.isClosed()==false)
 		{
 			if(the_sensors.FIRST_TIME == false)
 			{
@@ -496,14 +472,9 @@ public class Main_thread extends Thread
 				"/Acceleration x: " + Float.toString(acceleration[0]) + "/Acceleration y: " + Float.toString(acceleration[1]) + "/Acceleration z: " + Float.toString(acceleration[2]) + 
 				"/Angular speed x: " + Float.toString(gyroscope[0]) + "/Angular speed y: " + Float.toString(gyroscope[1]) + "/Angular speed z: " + Float.toString(gyroscope[2]) +
 				"/Latitude: " + Double.toString(latitude)  + "/Longitude: " + Double.toString(longitude)  + "/Altitude: " + Double.toString(altitude)  + 
-				"/Accuracy: " + Double.toString(accuracy) + "/" + the_sensors.cycle_acce + "/" + the_sensors.cycle_compass + "/" + the_sensors.cycle_gyro;
+				"/Accuracy: " + Double.toString(accuracy);
 
-				if(NEW_DATA_GPS == true)
-				{
-					string_sensors_vals += "/" + GPS.cycle;
-				}
-				//				long gc = GPS.cycle;
-				//				if(gc > -10) string_sensors_vals += "/" + gc;
+				if(NEW_DATA_GPS == true) string_sensors_vals += "/" + the_GPS.cycle;
 
 				try 
 				{			 
@@ -518,34 +489,44 @@ public class Main_thread extends Thread
 	/********************************************************************************************************************************************************************/
 	/***************************************************************   IOIO   ***************************************************************/
 	/********************************************************************************************************************************************************************/
-	private void start_IOIO_udp()
+	private void start_IOIO()
 	{
-		try
+		if(IOIO_STARTED == false)
 		{
-			serverAddr = InetAddress.getByName(ip_address_server);
-			socket_udp_ioio = new DatagramSocket();
+			try
+			{
+				serverAddr = InetAddress.getByName(ip_address_server);
+				socket_udp_ioio = new DatagramSocket();
+
+				ioio_helper.start();			
+				IOIO_STARTED = true;	
+			}
+			catch (IOException exception) {	Log.e(TAG, "Error socket: ", exception);}
 		}
-		catch (IOException exception) {	Log.e(TAG, "Error socket: ", exception);}
 	}
 
-	private void stop_IOIO_udp()
+	private void stop_IOIO()
 	{
-		if(socket_udp_ioio!= null)
+		if(IOIO_STARTED == true)
 		{
-			socket_udp_ioio.close();
-			socket_udp_ioio = null;
+			if(socket_udp_ioio!= null)
+			{
+				socket_udp_ioio.close();
+				socket_udp_ioio = null;
+				ioio_helper.stop();
+				ioio_helper.destroy();
+			}
+			the_ioio = null;
+			RC_MODE=true;
+			IOIO_STARTED = false;	
 		}
-		ioio_thread = null;
-		EXPLORE_MODE=false;
-		RC_MODE=true;
 	}
 
-	private void get_ioio_vals()
+	private void get_ioio_data()
 	{
-		if(the_gui.IOIO_STARTED == true)
+		if(IOIO_STARTED == true && the_ioio != null)
 		{
-			ioio_thread = the_gui.the_IOIO;
-			IR_vals  = ioio_thread.get_IR_values();
+			IR_vals  = the_ioio.get_IR_values();
 
 			if(IR_vals != null)
 			{
@@ -561,13 +542,13 @@ public class Main_thread extends Thread
 
 	private void send_ioio_data() 
 	{
-		if(the_gui.IOIO_STARTED == true && socket_udp_ioio!= null)
+		if(IOIO_STARTED == true && socket_udp_ioio!= null)
 		{
 			if(NEW_DATA_IOIO == true)
 			{
 				string_ioio_vals = "IR left: " + Float.toString(IR_left) + "/IR front left: " + Float.toString(IR_front_left) +
 				"/IR front right: " + Float.toString(IR_front_right) + "/IR right: " + Float.toString(IR_right) +
-				"/PWM motor: " + Float.toString(pwm_motor) +"/PWM servo: " + Float.toString(pwm_servo) + "/" + ioio_thread.cycle;
+				"/PWM motor: " + Float.toString(pwm_motor) +"/PWM servo: " + Float.toString(pwm_servo) + "/" + the_ioio.cycle;
 
 				try 
 				{
@@ -579,104 +560,56 @@ public class Main_thread extends Thread
 		}
 	}
 
-	// Obstacle avoidance and steering algorithm based on Warren & Fajen
-	private void autoDriveWF()
+	/********************************************************************************************************************************************************************/
+	/****************************************************** function from original IOIOActivity *********************************************************************************/
+	/********************************************************************************************************************************************************************/
+	@Override
+	public IOIOLooper createIOIOLooper(String connectionType, Object extra) 
 	{
-		//		d = lastKnownLocation_GPS.distanceTo(target_location);
-
-		//		azimuth = the_sensors.get_azimuth_90();
-		//		azimuth += declination;
-		//		bearing = lastKnownLocation_GPS.bearingTo(target_location);
-		//		float direction = azimuth - bearing;
-		//		if(direction > 180) 		direction -= 360;
-		//		else if(direction < -180)	direction += 360; 
-
-		ang[0] = Math.PI / 4.0;		//for left
-		ang[1] = Math.PI / 8.0;			//for front left 
-		ang[2] = -Math.PI / 8.0;		//for front right 
-		ang[3] = -Math.PI / 4.0;		//for right 
-
-		dist[0] = 1.0 - IR_left / maxIR;
-		dist[1] = 1.0 - IR_front_left / maxIR;
-		dist[2] = 1.0 - IR_front_right / maxIR;
-		dist[3] = 1.0 - IR_right / maxIR;
-
-		turn = 0;
-		for (int i = 0; i < 4; i++) 
+		if(the_ioio == null && connectionType.matches("ioio.lib.android.bluetooth.BluetoothIOIOConnection"))
 		{
-			turn = turn + (k0 * ang[i]) * Math.exp(-c3 * Math.abs(ang[i]))* Math.exp(-c4 * dist[i]);
-			if (dist[i] < minDist) 	minDist = dist[i];					//find minimum distance (closest obstacle)
+			Log.i(TAG,"create ioio: " +  SystemClock.elapsedRealtime());
+			the_ioio = new IOIO_thread();
+			the_ioio.set_inverted(INVERTED);
+			return the_ioio;
 		}
-		speed = Math.exp(speedConst * minDist);		
-
-		if ((GOING_FORWARD==true) && (minDist < TOOCLOSE))				// check for reversal from forward to reverse 
-		{
-			GOING_FORWARD = false;
-			pwm_servo = DEFAULT_PWM;
-			pwm_motor = DEFAULT_PWM;
-			Log.d(TAG, "forward to reverse");
-		}
-		else if ((GOING_FORWARD == false) && (minDist > ALLCLEAR)) 		// check for reversal from reverse to forward 
-		{
-			GOING_FORWARD = true;
-			pwm_servo = DEFAULT_PWM;
-			pwm_motor = DEFAULT_PWM;
-			Log.d(TAG, "reverse to forward");
-		}
-		else if (GOING_FORWARD == true)									// going forward 
-		{
-			pwm_servo =  (float) (DEFAULT_PWM + turn * 2500);			//if turn is positive: turn right; left otherwise
-			pwm_motor = (float) ((DEFAULT_PWM + 65) - speed * 65);			
-			if (pwm_motor > MAX_PWM_MOTOR)  	pwm_motor = MAX_PWM_MOTOR; 
-			else if (pwm_motor < DEFAULT_PWM) 	pwm_motor = DEFAULT_PWM;			
-		} 
-		else															// going in reverse
-		{
-			pwm_servo = (float) (DEFAULT_PWM - turn * 2500);
-			pwm_motor = (float) (DEFAULT_PWM - 85);
-			if (pwm_motor < MIN_PWM_MOTOR)  	pwm_motor = MIN_PWM_MOTOR; 
-		}
-
-		if (pwm_servo > MAX_PWM_SERVO)  		pwm_servo = MAX_PWM_SERVO; 
-		else if (pwm_servo < MIN_PWM_SERVO) 	pwm_servo = MIN_PWM_SERVO;
-
-		Log.d(TAG, "forward(y/n):" +GOING_FORWARD + ", speed=" + minDist + ", turn=" + turn);
-		Log.d(TAG, "pwm_motor=" + pwm_motor + ", pwm_servo=" + pwm_servo);
+		else return null;
 	}
 
 	/********************************************************************************************************************************************************************/
 	/***************************************************************   camera   ***************************************************************/
 	/********************************************************************************************************************************************************************/
-	private void start_camera_udp()
+	private void start_camera()
 	{
-		try
+		if(CAMERA_STARTED == false)
 		{
-			serverAddr = InetAddress.getByName(ip_address_server);
-			socket_udp_camera = new DatagramSocket();
-		}
-		catch (Exception exception) {	Log.e(TAG, "Error: ", exception);}
+			the_camera = new Camera_feedback(idx_size_cam);
+			try
+			{
+				serverAddr = InetAddress.getByName(ip_address_server);
+				socket_udp_camera = new DatagramSocket();
+			}
+			catch (Exception exception) {	Log.e(TAG, "Error: ", exception);}
 
-		NEW_IMA = true;
+			CAMERA_STARTED = true;
+			NEW_IMA = true;
+		}		
 	}
 
-	private void stop_camera_udp()
+	private void stop_camera()
 	{
-		if(socket_udp_camera!= null)
+		if(CAMERA_STARTED == true)
 		{
-			socket_udp_camera.close();
-			socket_udp_camera=null;
-			NEW_FRAME = false;
+			the_camera.stop_camera();	
 
-			//			try 
-			//			{
-			//				Log.i("tcp","send fps");
-			//				the_cam.t_intervals.remove(0);
-			//				String s = "FPS/" + the_cam.t_intervals.toString();
-			//				out.write(s);
-			//				out.flush();
-			//				the_cam.t_intervals.clear();
-			//			} 
-			//			catch (IOException e){}
+			if(socket_udp_camera!= null)
+			{
+				socket_udp_camera.close();
+				socket_udp_camera=null;
+			}
+			NEW_FRAME = false;
+			the_camera = null;			
+			CAMERA_STARTED = false;
 		}
 	}
 
@@ -685,17 +618,15 @@ public class Main_thread extends Thread
 		compression_rate = nb;
 	}
 
-	private void get_camera_frame() 
+	private void get_camera_data() 
 	{
-		if(the_gui.CAMERA_STARTED == true)
+		if(CAMERA_STARTED == true && the_camera != null)
 		{
 			if(NEW_IMA==true)
 			{
-				the_cam = the_gui.the_cam;	
-				width_ima = the_cam.mPreviewSize.width;
-				height_ima = the_cam.mPreviewSize.height;		
-				the_image = Bitmap.createBitmap(width_ima, height_ima, Bitmap.Config.ARGB_8888);
-				m = new Mat(height_ima + height_ima / 2, width_ima, CvType.CV_8UC1);	//m will be YUV format
+				width_ima = the_camera.mPreviewSize.width;
+				height_ima = the_camera.mPreviewSize.height;		
+				the_frame = new Mat(height_ima + height_ima / 2, width_ima, CvType.CV_8UC1);	//m will be YUV format
 
 				dest = new Mat(64 + 32,80,CvType.CV_8UC1);	
 				dest2 = new Mat();
@@ -706,13 +637,13 @@ public class Main_thread extends Thread
 				Log.i(TAG, "new ima");
 			}			
 
-			byte[] data = the_cam.get_data();
+			byte[] data = the_camera.get_data();
 			if(data != null)
 			{
-				m.put(0, 0, data);
+				the_frame.put(0, 0, data);
 				//				Imgproc.cvtColor(m, dest, Imgproc.COLOR_YUV420sp2RGB,4);	//YUV to ARGB
 
-				Imgproc.resize(m, dest, dest.size());
+				Imgproc.resize(the_frame, dest, dest.size());
 				Imgproc.cvtColor(dest, dest2, Imgproc.COLOR_YUV420sp2GRAY);		//format to grayscale				
 
 				/** compress to jpeg using opencv...not sure it's faster than using Bitmap Compress**/
@@ -722,12 +653,6 @@ public class Main_thread extends Thread
 				/************************/
 
 				picData = buff.toArray();
-
-				/** compress to jpeg  **/
-				//				Utils.matToBitmap(dest, the_image);
-				//				byteStream.reset();
-				//				the_image.compress(Bitmap.CompressFormat.JPEG, compression_rate, byteStream);	// !!!!!!!  change compression rate to change packets size
-				//				picData = byteStream.toByteArray();		
 				NEW_FRAME = true;
 			}
 			else NEW_FRAME = false;
@@ -736,9 +661,8 @@ public class Main_thread extends Thread
 
 	private void send_camera_data()
 	{
-		if(NEW_FRAME == true && socket_udp_camera!=null) //the_gui.CAMERA_STARTED
-		{						
-
+		if(NEW_FRAME == true && socket_udp_camera!=null)
+		{				
 			nb_packets = (int)Math.ceil(picData.length / (float)DATAGRAM_MAX_SIZE);				//Number of packets used for this bitmap
 			size = DATAGRAM_MAX_SIZE;
 
@@ -753,17 +677,10 @@ public class Main_thread extends Thread
 				data2[1] = (byte)nb_packets;
 				data2[2] = (byte)packetCount;
 
-				int tt = (int) the_cam.cycle;
-				data2[3] = (byte)(tt >> 8);
-				data2[4] = (byte)tt;
-				//				data2[3] = (byte)(size >> 8);
-				//				data2[4] = (byte)size;
-
 				System.arraycopy(picData, packetCount * DATAGRAM_MAX_SIZE, data2, HEADER_SIZE, size);	// Copy current slice to byte array		
 				try 
 				{			
-					size_p = data2.length;
-					DatagramPacket packet = new DatagramPacket(data2, size_p, serverAddr, port_camera);
+					DatagramPacket packet = new DatagramPacket(data2, data2.length, serverAddr, port_camera);
 					socket_udp_camera.send(packet);
 				}catch (Exception e) {	Log.e(TAG, "Error: ", e);}	
 			}

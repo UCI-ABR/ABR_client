@@ -46,7 +46,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 package carl.abr.IO;
 
-import carl.abr.gui.Main_activity;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -56,7 +55,6 @@ import android.os.SystemClock;
 public class Sensors_listener implements SensorEventListener 
 {
 	final String tag = "Sensors";
-
 	long time;
 	public long old_time_acce,cycle_acce;
 	public long old_time_gyro,cycle_gyro;
@@ -71,7 +69,7 @@ public class Sensors_listener implements SensorEventListener
 	float mAzimuth;
 	public boolean FIRST_TIME;
 
-	public Sensors_listener(Main_activity act)						// default constructor 
+	public Sensors_listener()						// default constructor 
 	{
 		super();
 		R = new float[9];		
@@ -80,11 +78,10 @@ public class Sensors_listener implements SensorEventListener
 		orientation = new float[3];
 		gyroscope_values = new float[3];
 		FIRST_TIME = true;
-	}
+	}	
 
 	@Override
-	public void onAccuracyChanged(Sensor sensor, int accuracy) {
-	}
+	public void onAccuracyChanged(Sensor sensor, int accuracy) {}
 
 	@Override
 	public void onSensorChanged(SensorEvent event) 
