@@ -47,16 +47,11 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package carl.abr.gui;
 
-import org.opencv.android.BaseLoaderCallback;
-import org.opencv.android.LoaderCallbackInterface;
-import org.opencv.android.OpenCVLoader;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.PowerManager;
-import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
@@ -86,36 +81,16 @@ public class Main_activity extends Activity
 	/***************************************************************   Threads   *************************************************************/
 	public Main_thread the_main_thread;
 
-	/****************************************************************************** opencv 2.4.5**********************************************/	
-	BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
-		@Override
-		public void onManagerConnected(int status) 
-		{
-			switch (status) 
-			{
-			case LoaderCallbackInterface.SUCCESS:
-				Log.i(tag, "OpenCV loaded successfully");
-				break;
-			default:
-				super.onManagerConnected(status);
-				break;
-			}
-		}
-	};
-	
+		
 	/**************************************************************************************************************************************/
 	/********************************************************** activity / GUI ************************************************************/
 	/**************************************************************************************************************************************/
-
 	@Override
 	public void onCreate(Bundle savedInstanceState) 
 	{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main_acti);
 		the_context = this.getApplicationContext();
-
-		if (!OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_8, this, mLoaderCallback)) // load opencv 2.4.5 libraries
-			Log.e(tag, "Cannot connect to OpenCV Manager");		
 
 		ip_text = (EditText) findViewById(R.id.txt_IP);
 		port_text = (EditText) findViewById(R.id.txt_port);

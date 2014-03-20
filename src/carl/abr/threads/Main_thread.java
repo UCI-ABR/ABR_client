@@ -73,6 +73,10 @@ import android.location.LocationManager;
 import android.os.Build;
 import android.os.SystemClock;
 import android.util.Log;
+
+import org.opencv.android.BaseLoaderCallback;
+import org.opencv.android.LoaderCallbackInterface;
+import org.opencv.android.OpenCVLoader;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
@@ -107,7 +111,6 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 	/***************************************************************   camera   ***************************************************************/
 	Camera_feedback the_camera;
 	int idx_size_cam; 					//index used to set size of image from camera	
-
 	ByteArrayOutputStream byteStream;
 	byte frame_nb = 0;	
 	int width_ima, height_ima,packetCount,nb_packets,size;
@@ -123,7 +126,6 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 	float pwm_motor = DEFAULT_PWM;	
 	float IR_right, IR_left, IR_front_left, IR_front_right; 
 	float[] IR_vals, PWM_vals;
-	String string_ioio_vals;	
 
 	/*****************************************   sensors    ***************************************************************/
 	SensorManager sensorManager;	
@@ -134,7 +136,6 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 	float[] acceleration;
 	float[] orientation;
 	float[] gyroscope;
-	String string_sensors_vals;
 	Location lastKnownLocation_GPS, target_location;
 	double latitude, longitude, altitude, accuracy;
 	float declination;
@@ -150,45 +151,22 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 	/*****************************************   TCP   ***************************************************************/
 	int port_TCP;
 	Socket the_TCP_socket;
-	String message_TCP;
 	InetSocketAddress serverAddr_TCP;
 	BufferedWriter out;
 	BufferedReader input;
 	int counter_TCP_check=0;
 
+	/********************************************************************************************************************************************************************/
+	/***************************************************************   constructor   ***************************************************************/
+	/********************************************************************************************************************************************************************/
 	public Main_thread(Main_activity gui)
 	{
 		the_gui = gui;
 		ip_address_server = the_gui.IP_server;	
 		port_TCP = the_gui.port_TCP;
 
-		ioio_helper = new IOIOAndroidApplicationHelper(the_gui, this);			// from IOIOActivity
-		ioio_helper.create();	// from IOIOActivity		
-
-		message_TCP = new String();
-		string_sensors_vals = new String();
-		string_ioio_vals = new String();
-
-		message_TCP = "PHONE/" + Build.MODEL + " " + Build.MANUFACTURER + " " + Build.PRODUCT;		
-
-		try	// get supported sizes of camera...to send to the server
-		{
-			Camera mCamera = Camera.open();        
-			Camera.Parameters parameters = mCamera.getParameters(); 
-			List<Size> mSupportedPreviewSizes = parameters.getSupportedPreviewSizes();
-			Size a_size;
-
-			for(int i=0;i<mSupportedPreviewSizes.size();i++)
-			{
-				a_size = mSupportedPreviewSizes.get(i);
-				message_TCP += "/" + Integer.toString(a_size.width) + "x"+ Integer.toString(a_size.height); 
-			}
-			message_TCP += "/\n";
-
-			if (mSupportedPreviewSizes != null) {Log.i(TAG, "nb supported sizes: " + mSupportedPreviewSizes.size());}
-			mCamera.release(); 
-		}
-		catch(Exception e){Log.e(TAG, "error camera");}
+		ioio_helper = new IOIOAndroidApplicationHelper(the_gui, this);	// from IOIOActivity
+		ioio_helper.create();											// from IOIOActivity	
 	}
 
 	/********************************************************************************************************************************************************************/
@@ -197,6 +175,7 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 	@Override
 	public final void run() 
 	{	
+		load_opencv();	// load opencv libraries for image processing
 		start_tcp();	// connect to the server
 
 		while(STOP == false)
@@ -216,6 +195,7 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 				send_camera_data();
 				send_ioio_data();
 			}
+			send_keepalive_tcp();
 			read_tcp();					//read tcp message (timeout 20ms)... set RECONNECT_TCP=true if problem
 
 			if(the_ioio != null) the_ioio.set_PWM_values(pwm_motor, pwm_servo);			//set pwm values, wake up ioio thread 
@@ -252,8 +232,8 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 				the_TCP_socket.setSoTimeout(10);							//read timeout  (ms)
 				out = new BufferedWriter(new OutputStreamWriter(the_TCP_socket.getOutputStream()));
 				input = new BufferedReader(new InputStreamReader(the_TCP_socket.getInputStream()));
-
-				RECONNECT_TCP = false;
+				send_param_tcp();
+				RECONNECT_TCP = false;				
 
 				the_gui.runOnUiThread(new Runnable() 
 				{
@@ -263,10 +243,6 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 						if(the_gui.button_connect.isChecked()==false) the_gui.button_connect.setChecked(true);                
 					}
 				}); 
-
-				out.write(message_TCP);
-				out.flush();
-				//				Log.i("tcp","send msg " + message_TCP);
 			}
 			catch(java.io.IOException e) 
 			{
@@ -287,11 +263,39 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 		catch (IOException e) {	Log.e("tcp","error close: ", e);}
 		Log.i("tcp","tcp client stopped ");
 	}
+	
+	private void send_param_tcp()
+	{
+		String message_TCP = new String();
+		message_TCP = "PHONE/" + Build.MODEL + " " + Build.MANUFACTURER + " " + Build.PRODUCT;		
 
-	private void read_tcp()
+		try	// get supported sizes of camera...to send to the server
+		{
+			Camera mCamera = Camera.open();        
+			Camera.Parameters parameters = mCamera.getParameters(); 
+			List<Size> mSupportedPreviewSizes = parameters.getSupportedPreviewSizes();
+			Size a_size;
+
+			for(int i=0;i<mSupportedPreviewSizes.size();i++)
+			{
+				a_size = mSupportedPreviewSizes.get(i);
+				message_TCP += "/" + Integer.toString(a_size.width) + "x"+ Integer.toString(a_size.height); 
+			}
+			message_TCP += "/\n";
+
+			if (mSupportedPreviewSizes != null) {Log.i(TAG, "nb supported sizes: " + mSupportedPreviewSizes.size());}
+			mCamera.release(); 
+			
+			out.write(message_TCP);
+			out.flush();
+		}
+		catch(Exception e){Log.e(TAG, "error camera");}
+	}
+	
+	private void send_keepalive_tcp()
 	{
 		counter_TCP_check++;
-		if(counter_TCP_check==500)	//every 5s approx.
+		if(counter_TCP_check==500)	
 		{
 			counter_TCP_check=0;
 			try 
@@ -303,12 +307,15 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 			{	
 				Log.e("tcp","error write: ", e); 
 				stop_tcp();							//close properly
-				stop_all();
+				stop_all();							// stop everything
 				RECONNECT_TCP = true;
-				start_tcp();
+				start_tcp();						// reconnect to server
 			} 			
-		}			
+		}	
+	}
 
+	private void read_tcp()
+	{
 		if(RECONNECT_TCP==false)
 		{
 			String st=null;		
@@ -466,7 +473,7 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 	{
 		if(SENSORS_STARTED == true && socket_udp_sensors.isClosed()==false)
 		{
-			string_sensors_vals = "Azimuth: "+ Float.toString(orientation[0])+ "/Pitch: "+ Float.toString(orientation[1])+ "/Roll: " + Float.toString(orientation[2]) +
+			String string_sensors_vals = "Azimuth: "+ Float.toString(orientation[0])+ "/Pitch: "+ Float.toString(orientation[1])+ "/Roll: " + Float.toString(orientation[2]) +
 					"/Acceleration x: " + Float.toString(acceleration[0]) + "/Acceleration y: " + Float.toString(acceleration[1]) + "/Acceleration z: " + Float.toString(acceleration[2]) + 
 					"/Angular speed x: " + Float.toString(gyroscope[0]) + "/Angular speed y: " + Float.toString(gyroscope[1]) + "/Angular speed z: " + Float.toString(gyroscope[2]) +
 					"/Latitude: " + Double.toString(latitude)  + "/Longitude: " + Double.toString(longitude)  + "/Altitude: " + Double.toString(altitude)  + 
@@ -541,7 +548,7 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 		{
 			if(NEW_DATA_IOIO == true)
 			{
-				string_ioio_vals = "IR left: " + Float.toString(IR_left) + "/IR front left: " + Float.toString(IR_front_left) +
+				String string_ioio_vals = "IR left: " + Float.toString(IR_left) + "/IR front left: " + Float.toString(IR_front_left) +
 						"/IR front right: " + Float.toString(IR_front_right) + "/IR right: " + Float.toString(IR_right) +
 						"/PWM motor: " + Float.toString(pwm_motor) +"/PWM servo: " + Float.toString(pwm_servo);
 
@@ -683,5 +690,31 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 
 			if(frame_nb == 127)frame_nb=0;
 		}
+	}
+	
+	/***************************************************************************************************************************************************/
+	/*************************************************************  load opencv libraries  *************************************************************/
+	/***************************************************************************************************************************************************/
+	private void load_opencv()
+	{
+		BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(the_gui) {
+			@Override
+			public void onManagerConnected(int status) 
+			{
+				switch (status) 
+				{
+				case LoaderCallbackInterface.SUCCESS:
+					Log.i(TAG, "OpenCV loaded successfully");
+					break;
+				default:
+					super.onManagerConnected(status);
+					break;
+				}
+			}
+		};
+		
+		if (!OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_8, the_gui, mLoaderCallback)) // load opencv 2.4.8 libraries
+			Log.e(TAG, "Cannot connect to OpenCV Manager");		
+
 	}
 }
