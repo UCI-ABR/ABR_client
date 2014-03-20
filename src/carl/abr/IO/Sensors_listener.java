@@ -50,15 +50,10 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.os.SystemClock;
 
 public class Sensors_listener implements SensorEventListener 
 {
 	final String tag = "Sensors";
-	long time;
-	public long old_time_acce,cycle_acce;
-	public long old_time_gyro,cycle_gyro;
-	public long old_time_compass,cycle_compass;
 	
 	/***************************************************************  Values for orientation and acceleration   ***************************************************************/
 	float[] mMagneticValues;
@@ -67,7 +62,6 @@ public class Sensors_listener implements SensorEventListener
 	float[] orientation;
 	float[] R;
 	float mAzimuth;
-	public boolean FIRST_TIME;
 
 	public Sensors_listener()						// default constructor 
 	{
@@ -77,7 +71,6 @@ public class Sensors_listener implements SensorEventListener
 		mAccelerometerValues = new float[3];
 		orientation = new float[3];
 		gyroscope_values = new float[3];
-		FIRST_TIME = true;
 	}	
 
 	@Override
@@ -86,42 +79,22 @@ public class Sensors_listener implements SensorEventListener
 	@Override
 	public void onSensorChanged(SensorEvent event) 
 	{
-		//		  if (event.accuracy == SensorManager.SENSOR_STATUS_UNRELIABLE)
-		//		        return;
-		
-		if(FIRST_TIME==true)
-		{
-			FIRST_TIME=false;
-			old_time_compass = SystemClock.elapsedRealtime() - 10;	//just for first value...
-			old_time_acce = old_time_compass;
-			old_time_gyro = old_time_compass;
-		}
-
 		switch (event.sensor.getType()) 
 		{
 		case Sensor.TYPE_MAGNETIC_FIELD:
 			mMagneticValues[0] = event.values[0];
 			mMagneticValues[1] = event.values[1];
 			mMagneticValues[2] = event.values[2];
-			time = SystemClock.elapsedRealtime();
-			cycle_compass = time - old_time_compass;			
-			old_time_compass = time;		
 			break;
 		case Sensor.TYPE_ACCELEROMETER:
 			mAccelerometerValues[0] = event.values[0];
 			mAccelerometerValues[1] = event.values[1];
 			mAccelerometerValues[2] = event.values[2];
-			time = SystemClock.elapsedRealtime();
-			cycle_acce = time - old_time_acce;			
-			old_time_acce = time;		
 			break;
 		case Sensor.TYPE_GYROSCOPE:
 			gyroscope_values[0] = event.values[0];
 			gyroscope_values[1] = event.values[1];
 			gyroscope_values[2] = event.values[2];
-			time = SystemClock.elapsedRealtime();
-			cycle_gyro = time - old_time_gyro;			
-			old_time_gyro = time;		
 			break;
 		}
 

@@ -164,11 +164,11 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 
 		ioio_helper = new IOIOAndroidApplicationHelper(the_gui, this);			// from IOIOActivity
 		ioio_helper.create();	// from IOIOActivity		
-				
+
 		message_TCP = new String();
 		string_sensors_vals = new String();
 		string_ioio_vals = new String();
-		
+
 		message_TCP = "PHONE/" + Build.MODEL + " " + Build.MANUFACTURER + " " + Build.PRODUCT;		
 
 		try	// get supported sizes of camera...to send to the server
@@ -224,7 +224,7 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 		stop_tcp();
 		stop_all();
 	}
-	
+
 	public synchronized void stop_thread()
 	{
 		STOP = true;
@@ -379,7 +379,7 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 			}
 		}
 	}
-	
+
 	/********************************************************************************************************************************************************************/
 	/***************************************************************   sensors   ***************************************************************/	
 	/********************************************************************************************************************************************************************/
@@ -453,7 +453,7 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 							Double.valueOf(lastKnownLocation_GPS.getLongitude()).floatValue(),
 							Double.valueOf(lastKnownLocation_GPS.getAltitude()).floatValue(),
 							System.currentTimeMillis()
-					);
+							);
 					declination = geoField.getDeclination();				// used to correct the angle from magnetic north to true north
 				}
 				NEW_DATA_GPS = true;
@@ -466,23 +466,18 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 	{
 		if(SENSORS_STARTED == true && socket_udp_sensors.isClosed()==false)
 		{
-			if(the_sensors.FIRST_TIME == false)
-			{
-				string_sensors_vals = "Azimuth: "+ Float.toString(orientation[0])+ "/Pitch: "+ Float.toString(orientation[1])+ "/Roll: " + Float.toString(orientation[2]) +
-				"/Acceleration x: " + Float.toString(acceleration[0]) + "/Acceleration y: " + Float.toString(acceleration[1]) + "/Acceleration z: " + Float.toString(acceleration[2]) + 
-				"/Angular speed x: " + Float.toString(gyroscope[0]) + "/Angular speed y: " + Float.toString(gyroscope[1]) + "/Angular speed z: " + Float.toString(gyroscope[2]) +
-				"/Latitude: " + Double.toString(latitude)  + "/Longitude: " + Double.toString(longitude)  + "/Altitude: " + Double.toString(altitude)  + 
-				"/Accuracy: " + Double.toString(accuracy);
+			string_sensors_vals = "Azimuth: "+ Float.toString(orientation[0])+ "/Pitch: "+ Float.toString(orientation[1])+ "/Roll: " + Float.toString(orientation[2]) +
+					"/Acceleration x: " + Float.toString(acceleration[0]) + "/Acceleration y: " + Float.toString(acceleration[1]) + "/Acceleration z: " + Float.toString(acceleration[2]) + 
+					"/Angular speed x: " + Float.toString(gyroscope[0]) + "/Angular speed y: " + Float.toString(gyroscope[1]) + "/Angular speed z: " + Float.toString(gyroscope[2]) +
+					"/Latitude: " + Double.toString(latitude)  + "/Longitude: " + Double.toString(longitude)  + "/Altitude: " + Double.toString(altitude)  + 
+					"/Accuracy: " + Double.toString(accuracy);
 
-				if(NEW_DATA_GPS == true) string_sensors_vals += "/" + the_GPS.cycle;
-
-				try 
-				{			 
-					DatagramPacket packet = new DatagramPacket(string_sensors_vals.getBytes(), string_sensors_vals.length(), serverAddr, port_sensors);
-					socket_udp_sensors.send(packet);
-				} 
-				catch (Exception e) {	Log.e(TAG, "Error send: ", e);}
-			}
+			try 
+			{			 
+				DatagramPacket packet = new DatagramPacket(string_sensors_vals.getBytes(), string_sensors_vals.length(), serverAddr, port_sensors);
+				socket_udp_sensors.send(packet);
+			} 
+			catch (Exception e) {	Log.e(TAG, "Error send: ", e);}
 		}
 	}
 
@@ -547,8 +542,8 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 			if(NEW_DATA_IOIO == true)
 			{
 				string_ioio_vals = "IR left: " + Float.toString(IR_left) + "/IR front left: " + Float.toString(IR_front_left) +
-				"/IR front right: " + Float.toString(IR_front_right) + "/IR right: " + Float.toString(IR_right) +
-				"/PWM motor: " + Float.toString(pwm_motor) +"/PWM servo: " + Float.toString(pwm_servo) + "/" + the_ioio.cycle;
+						"/IR front right: " + Float.toString(IR_front_right) + "/IR right: " + Float.toString(IR_right) +
+						"/PWM motor: " + Float.toString(pwm_motor) +"/PWM servo: " + Float.toString(pwm_servo);
 
 				try 
 				{

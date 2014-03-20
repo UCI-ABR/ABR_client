@@ -70,7 +70,6 @@ import carl.gui.R;
 public class Main_activity extends Activity
 {
 	final String tag = "Main activity";
-//	Main_activity the_activity;				//reference to this activity	
 	Context the_context;
 
 	/***************************************************************   GUI stuff   **********************************************************/

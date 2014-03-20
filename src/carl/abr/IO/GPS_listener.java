@@ -50,17 +50,12 @@ package carl.abr.IO;
 import android.location.Location;
 import android.location.LocationListener;
 import android.os.Bundle;
-import android.os.SystemClock;
 
 public class GPS_listener implements LocationListener
 {	
 	private static final int ONE_MINUTES = 1000 * 60 * 1;
 	Location lastKnownLocation_GPS;
-	boolean NO_GPS = true;
-	long mLastLocationMillis=0;
 	boolean NEW_LOCATION;
-
-	public long cycle=-10, time;
 
 	public GPS_listener()
 	{
@@ -70,11 +65,6 @@ public class GPS_listener implements LocationListener
 	
 	public synchronized Location get_gps_loc()
 	{
-//		long nb = SystemClock.elapsedRealtime() - mLastLocationMillis;
-//		isGPSFix = nb < 3000;
-
-//		if(!isGPSFix) return null;
-//		else if(lastKnownLocation_GPS != null && NEW_LOCATION==true)
 		if(lastKnownLocation_GPS != null && NEW_LOCATION==true)
 		{
 			NEW_LOCATION = false;
@@ -87,16 +77,11 @@ public class GPS_listener implements LocationListener
 	{				
 		if(isBetterLocation(location,  lastKnownLocation_GPS) == true)
 		{
-			time = SystemClock.elapsedRealtime();
-			cycle = time - mLastLocationMillis;			
-			mLastLocationMillis = time;		
-
 			lastKnownLocation_GPS = location;	
 			NEW_LOCATION = true;
-			//			mLastLocationMillis = SystemClock.elapsedRealtime();
 		}
 	}
-	public void onStatusChanged(String provider, int status, Bundle extras) {} // stupid function never called !!!
+	public void onStatusChanged(String provider, int status, Bundle extras) {} // function never called ?
 	public void onProviderEnabled(String provider) {}
 	public void onProviderDisabled(String provider) {}
 

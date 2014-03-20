@@ -59,14 +59,10 @@ public class Camera_feedback
 	private static final String TAG = "IP_cam";	
 	Camera mCamera;
 	List<Size> mSupportedPreviewSizes;
-	List<int[]> mSupportedFPS;
 	public Size mPreviewSize;
 	int idx_selected_size;
 	byte[] data_image;		
 	SurfaceTexture dummy_surface;
-	
-	public long old_time,cycle, time;
-	int total_frames=0;
 
 	boolean NEW_FRAME;
 
@@ -83,26 +79,12 @@ public class Camera_feedback
 			mSupportedPreviewSizes = parameters.getSupportedPreviewSizes();	
 			mPreviewSize = mSupportedPreviewSizes.get(idx_selected_size);
 			parameters.setPreviewSize(mPreviewSize.width, mPreviewSize.height);
-			mSupportedFPS = parameters.getSupportedPreviewFpsRange();
-			
-//			int fps1=0,fps2=0;		
-//			for(int i=0; i<mSupportedFPS.size();i++)
-//			{
-//				fps1 = mSupportedFPS.get(i)[0];
-//				fps2 = mSupportedFPS.get(i)[1];	
-//				Log.i(TAG, "fps: " + fps1 + " ; " + fps2);
-//			}
-//			parameters.setPreviewFpsRange(fps1, fps2);			
-////			parameters.setFocusMode(Parameters.FOCUS_MODE_INFINITY);			
-//			parameters.setSceneMode(Camera.Parameters.SCENE_MODE_ACTION); //for higher fps BUT...can greatly vary on phone 
 			mCamera.setParameters(parameters);
 
 			try { mCamera.setPreviewTexture(dummy_surface); } catch (IOException t) {}
 
 			mCamera.setPreviewCallback(new cam_PreviewCallback());			
 			mCamera.startPreview();
-			
-//			old_time = SystemClock.elapsedRealtime();
 		} 
 		catch (Exception exception)	{	Log.e(TAG, "Error: ", exception);}
 	}
@@ -137,12 +119,7 @@ public class Camera_feedback
 		public void onPreviewFrame(byte[] data, Camera camera)
 		{		
 			NEW_FRAME = true;
-			total_frames++;
 			data_image = data.clone();
-
-//			time = SystemClock.elapsedRealtime();
-//			cycle = time - old_time;			
-//			old_time = time;
 		}
 	}
 }

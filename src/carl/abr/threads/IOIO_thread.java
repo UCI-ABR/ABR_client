@@ -66,7 +66,6 @@ public class IOIO_thread extends BaseIOIOLooper
 	float[] IR_values;
 	float[] PWM_values;
 
-	public long old_time,cycle, time;
 	public boolean UPDATED = false;
 
 	public IOIO_thread()
@@ -89,8 +88,6 @@ public class IOIO_thread extends BaseIOIOLooper
 		IR_front_left = ioio_.openAnalogInput(39);
 		IR_front_right = ioio_.openAnalogInput(40);
 		IR_right = ioio_.openAnalogInput(41);
-
-//		old_time = SystemClock.elapsedRealtime();
 	}
 
 	@Override
@@ -117,11 +114,7 @@ public class IOIO_thread extends BaseIOIOLooper
 				}
 				motor_output.setPulseWidth(pwm_M);
 				servo_output.setPulseWidth(pwm_S);
-
-//				time = SystemClock.elapsedRealtime();
-//				cycle = time - old_time;			
-//				old_time = time;		
-				//				Thread.sleep(20);
+//				Thread.sleep(20);
 			}
 			catch (InterruptedException e) {ioio_.disconnect();	}
 		}
