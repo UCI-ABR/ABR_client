@@ -686,11 +686,11 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 				Imgproc.resize(the_frame, dest, dest.size());
 				Imgproc.cvtColor(dest, dest2, Imgproc.COLOR_YUV420sp2GRAY);		//format to grayscale				
 
-				/** compress to jpeg using opencv...not sure it's faster than using Bitmap Compress**/
+				//** compress to jpeg using opencv...not sure it's faster than using Bitmap Compress**/
 				MatOfInt  params = new MatOfInt(Highgui.IMWRITE_JPEG_QUALITY, compression_rate);				
 				MatOfByte buff = new MatOfByte();	
 				Highgui.imencode(".jpg", dest2, buff, params);				
-				/************************/
+				//************************/
 
 				picData = buff.toArray();
 				NEW_FRAME = true;

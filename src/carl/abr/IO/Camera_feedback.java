@@ -54,18 +54,35 @@ import android.hardware.Camera.PreviewCallback;
 import android.hardware.Camera.Size;
 import android.util.Log;
 
+/** Used to open camera, and capture each frame using cam_PreviewCallback.*/
 public class Camera_feedback
 {
 	private static final String TAG = "IP_cam";	
+	
+	/** Object used to interact with the camera of the phone*/
 	Camera mCamera;
+	
+	/** List of resolution (preview sizes) supported by the camera of the phone*/
 	List<Size> mSupportedPreviewSizes;
+	
+	/** Selected preview size*/
 	public Size mPreviewSize;
+	
+	/** Index of the selected preview size: sent from the server over tcp socket*/
 	int idx_selected_size;
-	byte[] data_image;		
+	
+	/** byte array used to store the data of the image/frame */
+	byte[] data_image;
+	
+	/** dummy surface that will be set to 1 so we do not display the video frame on the screen (trick) */
 	SurfaceTexture dummy_surface;
-
+	
+	/** true: a new frame is available <br> false: the frame has already been accessed */
 	boolean NEW_FRAME;
 
+	/** Constructor that will open the camera, set parameters and link a preview callback that will copy the latest frame.
+	 * @param int idx_size: index of selected resolution (preview size) sent by server 
+	 * */
 	public Camera_feedback(int idx_size)
 	{
 		idx_selected_size = idx_size;			// index used to set preview size
@@ -73,7 +90,7 @@ public class Camera_feedback
 		try 
 		{			 
 			mCamera = Camera.open();      			
-			dummy_surface = new SurfaceTexture(1);
+			dummy_surface = new SurfaceTexture(1);							// so we do not display the video frame on the screen (trick)
 
 			Camera.Parameters parameters = mCamera.getParameters(); 
 			mSupportedPreviewSizes = parameters.getSupportedPreviewSizes();	
@@ -83,12 +100,13 @@ public class Camera_feedback
 
 			try { mCamera.setPreviewTexture(dummy_surface); } catch (IOException t) {}
 
-			mCamera.setPreviewCallback(new cam_PreviewCallback());			
-			mCamera.startPreview();
+			mCamera.setPreviewCallback(new cam_PreviewCallback());			// create a new cam_PreviewCallback and attach it to the camera
+			mCamera.startPreview();											// start camera with cam_PreviewCallback
 		} 
 		catch (Exception exception)	{	Log.e(TAG, "Error: ", exception);}
 	}
-
+	
+	/** Stop the camera preview and release the camera. */
 	public synchronized void stop_camera()
 	{
 		if(mCamera != null)
@@ -100,6 +118,8 @@ public class Camera_feedback
 		}
 	}
 
+	/** Returns the data of the new image/frame.
+	 * @return -byte array contaning the data/frame <br> -null if the frame has already been accessed and/or has not been updated yet.*/
 	public synchronized byte[] get_data()
 	{		
 		if(data_image != null && NEW_FRAME == true)
@@ -110,16 +130,15 @@ public class Camera_feedback
 		else return null;		
 	}	
 
-	/********************************************************************************************************************************************************************/
-	/***************************************************************   camera  callback ***************************************************************/
-	/********************************************************************************************************************************************************************/
-	private class cam_PreviewCallback implements PreviewCallback 	// Preview callback called whenever a new frame is available 
+	/** Implements PreviewCallback interface with {@link #onPreviewFrame(byte[], Camera)} which is called every time a new frame is available.
+	 * @see #onPreviewFrame(byte[], Camera)  */
+	private class cam_PreviewCallback implements PreviewCallback  
 	{
 		@Override
 		public void onPreviewFrame(byte[] data, Camera camera)
 		{		
 			NEW_FRAME = true;
-			data_image = data.clone();
+			data_image = data.clone();	// copy the image/frame
 		}
 	}
 }
