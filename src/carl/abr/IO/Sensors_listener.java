@@ -52,22 +52,41 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
 /** 
- * Listener used to interact with sensors of the phone. Once registered with the SensorManager, 
- * the function {@link #onSensorChanged(SensorEvent)} will be called every time a sensor has been updated. 
+ * Listener used to interact with sensors of the phone. Only one listener is used for multiple sensors (compass, gyroscope, accelerometer).
+ * <br> Once registered with the SensorManager, the function {@link #onSensorChanged(SensorEvent)} will be called every time a sensor has been updated.
+ * 
  * */
 public class Sensors_listener implements SensorEventListener 
 {
 	final String tag = "Sensors";
 	
-	/***************************************************************  Values for orientation and acceleration   ***************************************************************/
+	/** Ambient magnetic field in the X, Y and Z axis. In uT (micro-Tesla).
+	* @see SensorEvent*/
 	float[] mMagneticValues;
+	
+	/** Acceleration minus G in the X, Y and Z axis. In m/s^2.
+	 * @see SensorEvent*/
 	float[] mAccelerometerValues;
+	
+	/** Rate of rotation around the device's local X, Y and Z axis. In rad/s.
+	 * @see SensorEvent*/
 	float[] gyroscope_values;
+	
+	/** Orientation (compass values) of the device in local X, Y and Z axis. In degrees.*/
 	float[] orientation;
+	
+	/** Rotation matrix used to calculate the orientation of the device.
+	* @see SensorManager*/
 	float[] R;
+	
+	/** Azimuth of the phone (angle between the magnetic north direction and the y-axis, around the z-axis (0 to 359). 0=North, 90=East, 180=South, 270=West).*/
 	float mAzimuth;
-
-	public Sensors_listener()						// default constructor 
+	
+	/** 
+	 * Constructor that creates all arrays: <br> {@link #R} , {@link #mMagneticValues} , {@link #mAccelerometerValues} , {@link #orientation} , {@link #gyroscope_values}.
+	 * 
+	 * */
+	public Sensors_listener()	 
 	{
 		R = new float[9];		
 		mMagneticValues = new float[3];
@@ -101,6 +120,7 @@ public class Sensors_listener implements SensorEventListener
 			break;
 		}
 
+		//calculate orientation (compass values)
 		SensorManager.getRotationMatrix(R, null, mAccelerometerValues, mMagneticValues);	        
 		SensorManager.getOrientation(R, orientation);
 		orientation[0] = (float) Math.toDegrees(orientation[0]);
@@ -108,16 +128,31 @@ public class Sensors_listener implements SensorEventListener
 		orientation[2] = (float) Math.toDegrees(orientation[2]);
 	}
 
+	/** 
+	 * Returns the orientation (compass values) of the device in local X, Y and Z axis, in degrees.
+	 * @return the orientation as a: float[3] (azimuth, pitch and roll).
+	 * 
+	 * */
 	public synchronized float[] get_orientation()
 	{
 		return orientation;
 	}
 
+	/** 
+	 * Returns the acceleration of the device in local X, Y and Z axis, in m/s^2.
+	 * @return the acceleration as a: float[3].
+	 * 
+	 * */
 	public synchronized float[] get_acceleration()
 	{
 		return mAccelerometerValues;
 	}	
 
+	/** 
+	 * Returns the rate of rotation around the device's local X, Y and Z axis. In degrees/s.
+	 * @return the rate of rotation as a: float[3].
+	 * 
+	 * */
 	public synchronized float[] get_gyro_values()
 	{
 		gyroscope_values[0] = (float) Math.toDegrees(gyroscope_values[0]);
@@ -125,7 +160,13 @@ public class Sensors_listener implements SensorEventListener
 		gyroscope_values[2] = (float) Math.toDegrees(gyroscope_values[2]);
 		return gyroscope_values;
 	}	
-
+	
+	/** 
+	 * Returns the Azimuth of the phone when oriented 90 degrees on its side (landscape mode). <br>
+	 * Azimuth: angle between the magnetic north direction and the y-axis, around the z-axis (0 to 359: 0=North, 90=East, 180=South, 270=West).
+	 * @return azimuth (float) in degrees
+	 * 
+	 * */
 	public synchronized float get_azimuth_90()
 	{
 		mAzimuth = orientation[0] + 90f;		// +90 for landscape mode

@@ -100,9 +100,11 @@ public class GPS_listener implements LocationListener
 		}
 	}
 
-	/** From Google. Determines whether one Location reading is better than the current Location fix
+	/** 
+	 * From Google. Determines whether one Location reading is better than the current Location fix
 	 * @param location  The new Location that you want to evaluate
 	 * @param currentBestLocation  The current Location fix, to which you want to compare the new one
+	 * 
 	 */
 	protected boolean isBetterLocation(Location location, Location currentBestLocation) 
 	{
