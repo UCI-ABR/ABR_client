@@ -194,7 +194,6 @@ public class Main_activity extends Activity
 		});		
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
 	protected void onResume() 
 	{

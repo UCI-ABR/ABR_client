@@ -78,7 +78,7 @@
     <position x="1202" y="706" width="-1" height="-1"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
       visibility="true">      
-      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
+      <attributes public="false" package="false" protected="false" private="false" static="true"/>      
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
@@ -143,123 +143,115 @@
     </display>  
   </interface>  
   <association id="16">    
-    <bendpoint x="136" y="485"/>    
     <end type="SOURCE" refId="1" navigable="false">      
-      <attribute id="17" name="spinner_IP">        
-        <position x="152" y="496" width="70" height="18"/>      
-      </attribute>      
-      <multiplicity id="18" minimum="0" maximum="1">        
-        <position x="152" y="518" width="25" height="16"/>      
-      </multiplicity>    
-    </end>    
-    <end type="TARGET" refId="2" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <nesting id="19">    
-    <end type="SOURCE" refId="8"/>    
-    <end type="TARGET" refId="9"/>  
-  </nesting>  
-  <generalization id="20">    
-    <end type="SOURCE" refId="1"/>    
-    <end type="TARGET" refId="13"/>  
-  </generalization>  
-  <association id="21">    
-    <bendpoint x="354" y="377"/>    
-    <end type="SOURCE" refId="6" navigable="false">      
-      <attribute id="22" name="the_gui">        
-        <position x="236" y="389" width="52" height="18"/>      
-      </attribute>      
-      <multiplicity id="23" minimum="0" maximum="1"/>    
-    </end>    
-    <end type="TARGET" refId="1" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <association id="24">    
-    <end type="SOURCE" refId="1" navigable="false">      
-      <attribute id="25" name="spinner_port">        
+      <attribute id="17" name="spinner_port">        
         <position x="50" y="498" width="80" height="18"/>      
       </attribute>      
-      <multiplicity id="26" minimum="0" maximum="1">        
+      <multiplicity id="18" minimum="0" maximum="1">        
         <position x="104" y="517" width="25" height="16"/>      
       </multiplicity>    
     </end>    
     <end type="TARGET" refId="2" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
-  <realization id="27">    
+  <realization id="19">    
     <end type="SOURCE" refId="4"/>    
     <end type="TARGET" refId="11"/>  
   </realization>  
-  <generalization id="28">    
-    <end type="SOURCE" refId="6"/>    
-    <end type="TARGET" refId="10"/>  
-  </generalization>  
-  <association id="29">    
+  <association id="20">    
     <end type="SOURCE" refId="6" navigable="false">      
-      <attribute id="30" name="the_GPS"/>      
-      <multiplicity id="31" minimum="0" maximum="1"/>    
-    </end>    
-    <end type="TARGET" refId="3" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <association id="32">    
-    <end type="SOURCE" refId="6" navigable="false">      
-      <attribute id="33" name="the_ioio">        
-        <position x="828" y="449" width="55" height="18"/>      
-      </attribute>      
-      <multiplicity id="34" minimum="0" maximum="1"/>    
-    </end>    
-    <end type="TARGET" refId="5" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <association id="35">    
-    <end type="SOURCE" refId="6" navigable="false">      
-      <attribute id="36" name="the_camera">        
-        <position x="806" y="644" width="76" height="18"/>      
-      </attribute>      
-      <multiplicity id="37" minimum="0" maximum="1">        
-        <position x="860" y="669" width="25" height="16"/>      
-      </multiplicity>    
-    </end>    
-    <end type="TARGET" refId="8" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <association id="38">    
-    <end type="SOURCE" refId="1" navigable="false">      
-      <attribute id="39" name="the_main_thread">        
-        <position x="287" y="344" width="104" height="18"/>      
-      </attribute>      
-      <multiplicity id="40" minimum="0" maximum="1">        
-        <position x="365" y="330" width="25" height="16"/>      
-      </multiplicity>    
-    </end>    
-    <end type="TARGET" refId="6" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <realization id="41">    
-    <end type="SOURCE" refId="3"/>    
-    <end type="TARGET" refId="12"/>  
-  </realization>  
-  <generalization id="42">    
-    <end type="SOURCE" refId="5"/>    
-    <end type="TARGET" refId="14"/>  
-  </generalization>  
-  <realization id="43">    
-    <end type="SOURCE" refId="9"/>    
-    <end type="TARGET" refId="15"/>  
-  </realization>  
-  <association id="44">    
-    <end type="SOURCE" refId="6" navigable="false">      
-      <attribute id="45" name="the_sensors">        
+      <attribute id="21" name="the_sensors">        
         <position x="797" y="145" width="78" height="18"/>      
       </attribute>      
-      <multiplicity id="46" minimum="0" maximum="1">        
+      <multiplicity id="22" minimum="0" maximum="1">        
         <position x="815" y="177" width="25" height="16"/>      
       </multiplicity>    
     </end>    
     <end type="TARGET" refId="4" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
+  <association id="23">    
+    <end type="SOURCE" refId="6" navigable="false">      
+      <attribute id="24" name="the_GPS"/>      
+      <multiplicity id="25" minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" refId="3" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="26">    
+    <end type="SOURCE" refId="6" navigable="false">      
+      <attribute id="27" name="the_camera">        
+        <position x="806" y="644" width="76" height="18"/>      
+      </attribute>      
+      <multiplicity id="28" minimum="0" maximum="1">        
+        <position x="860" y="669" width="25" height="16"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" refId="8" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <generalization id="29">    
+    <end type="SOURCE" refId="6"/>    
+    <end type="TARGET" refId="10"/>  
+  </generalization>  
+  <association id="30">    
+    <bendpoint x="136" y="485"/>    
+    <end type="SOURCE" refId="1" navigable="false">      
+      <attribute id="31" name="spinner_IP">        
+        <position x="152" y="496" width="70" height="18"/>      
+      </attribute>      
+      <multiplicity id="32" minimum="0" maximum="1">        
+        <position x="152" y="518" width="25" height="16"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" refId="2" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="33">    
+    <end type="SOURCE" refId="6" navigable="false">      
+      <attribute id="34" name="the_ioio">        
+        <position x="828" y="449" width="55" height="18"/>      
+      </attribute>      
+      <multiplicity id="35" minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" refId="5" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="36">    
+    <bendpoint x="354" y="377"/>    
+    <end type="SOURCE" refId="6" navigable="false">      
+      <attribute id="37" name="the_gui">        
+        <position x="236" y="389" width="52" height="18"/>      
+      </attribute>      
+      <multiplicity id="38" minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" refId="1" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="39">    
+    <end type="SOURCE" refId="1" navigable="false">      
+      <attribute id="40" name="the_main_thread">        
+        <position x="287" y="344" width="104" height="18"/>      
+      </attribute>      
+      <multiplicity id="41" minimum="0" maximum="1">        
+        <position x="365" y="330" width="25" height="16"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" refId="6" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <realization id="42">    
+    <end type="SOURCE" refId="3"/>    
+    <end type="TARGET" refId="12"/>  
+  </realization>  
+  <generalization id="43">    
+    <end type="SOURCE" refId="5"/>    
+    <end type="TARGET" refId="14"/>  
+  </generalization>  
+  <nesting id="44">    
+    <end type="SOURCE" refId="8"/>    
+    <end type="TARGET" refId="9"/>  
+  </nesting>  
   <classifier-display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
     accessors="true" visibility="true">    
     <attributes public="true" package="true" protected="true" private="true" static="true"/>    

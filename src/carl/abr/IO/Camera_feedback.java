@@ -80,8 +80,10 @@ public class Camera_feedback
 	/** true: a new frame is available <br> false: the frame has already been accessed */
 	boolean NEW_FRAME;
 
-	/** Constructor that will open the camera, set parameters and link a preview callback that will copy the latest frame.
+	/** 
+	 * Constructor that will open the camera, set parameters and link a preview callback that will copy the latest frame.
 	 * @param int idx_size: index of selected resolution (preview size) sent by server 
+	 * 
 	 * */
 	public Camera_feedback(int idx_size)
 	{
@@ -106,7 +108,10 @@ public class Camera_feedback
 		catch (Exception exception)	{	Log.e(TAG, "Error: ", exception);}
 	}
 	
-	/** Stop the camera preview and release the camera. */
+	/** 
+	 * Stop the camera preview and release the camera. 
+	 * 
+	 * */
 	public synchronized void stop_camera()
 	{
 		if(mCamera != null)
@@ -118,8 +123,11 @@ public class Camera_feedback
 		}
 	}
 
-	/** Returns the data of the new image/frame.
-	 * @return -byte array contaning the data/frame <br> -null if the frame has already been accessed and/or has not been updated yet.*/
+	/** 
+	 * Returns the data of the new image/frame.
+	 * @return -byte array containing the data/frame. <br> -null if the frame has already been accessed and/or has not been updated yet.
+	 * 
+	 * */
 	public synchronized byte[] get_data()
 	{		
 		if(data_image != null && NEW_FRAME == true)
@@ -130,8 +138,11 @@ public class Camera_feedback
 		else return null;		
 	}	
 
-	/** Implements PreviewCallback interface with {@link #onPreviewFrame(byte[], Camera)} which is called every time a new frame is available.
-	 * @see #onPreviewFrame(byte[], Camera)  */
+	/** 
+	 * Implements PreviewCallback interface with {@link #onPreviewFrame(byte[], Camera)} which is called every time a new frame is available.
+	 * @see #onPreviewFrame(byte[], Camera)  
+	 * 
+	 * */
 	private class cam_PreviewCallback implements PreviewCallback  
 	{
 		@Override

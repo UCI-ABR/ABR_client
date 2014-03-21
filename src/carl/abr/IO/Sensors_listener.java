@@ -51,6 +51,10 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
+/** 
+ * Listener used to interact with sensors of the phone. Once registered with the SensorManager, 
+ * the function {@link #onSensorChanged(SensorEvent)} will be called every time a sensor has been updated. 
+ * */
 public class Sensors_listener implements SensorEventListener 
 {
 	final String tag = "Sensors";
@@ -65,7 +69,6 @@ public class Sensors_listener implements SensorEventListener
 
 	public Sensors_listener()						// default constructor 
 	{
-		super();
 		R = new float[9];		
 		mMagneticValues = new float[3];
 		mAccelerometerValues = new float[3];

@@ -158,7 +158,7 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 	int counter_TCP_check			= 0;
 	static int TCP_CHECK_RATE		= 500;		// check tcp connection to the server every 500 timesteps
 	static int CONNECT_TIMEOUT 		= 5000;		//timeout (ms) for connecting tcp socket
-	static int READ_TIMEOUT 		= 10;		//timeout (ms) when reading on tcp socket...also used like a wait()/sleep() for main loop
+	static int READ_TIMEOUT 		= 20;		//timeout (ms) when reading on tcp socket...also used like a wait()/sleep() for main loop
 
 	//********************************************************************************************************************************************************************/
 	//***************************************************************   constructor   ***************************************************************/
@@ -480,7 +480,7 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 			orientation = the_sensors.get_orientation();
 			acceleration = the_sensors.get_acceleration();	
 			gyroscope = the_sensors.get_gyro_values();			
-			lastKnownLocation_GPS = the_GPS.get_gps_loc();
+			lastKnownLocation_GPS = the_GPS.get_location();
 
 			if(lastKnownLocation_GPS != null)
 			{

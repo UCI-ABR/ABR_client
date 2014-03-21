@@ -51,24 +51,42 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.os.Bundle;
 
+/** 
+ * Listener used to interact with GPS. Once registered with the LocationManager, 
+ * the function {@link #onLocationChanged(Location)} will be called every time the GPS sends a new fix (location coordinates). 
+ * */
 public class GPS_listener implements LocationListener
 {	
-	private static final int ONE_MINUTES = 1000 * 60 * 1;
+	/** constant set to 1 minute in ms (60000)*/
+	static final int ONE_MINUTE = 1000 * 60 * 1;
+	
+	/** last known location received from the GPS*/
 	Location lastKnownLocation_GPS;
+	
+	/** true: a new location is available <br> false: the location has already been accessed and/or has not been updated yet.*/
 	boolean NEW_LOCATION;
 
+	
+	/** 
+	 * Constructor that initializes {@link #NEW_LOCATION} to false.
+	 * 
+	 * */
 	public GPS_listener()
 	{
-		super();
 		NEW_LOCATION = false;
 	}
 	
-	public synchronized Location get_gps_loc()
+	/** 
+	 * Returns the new GPS location.
+	 * @return -Location object of the last known GPS fix. <br> -null if the location has already been accessed and/or has not been updated yet.
+	 * 
+	 * */
+	public synchronized Location get_location()
 	{
 		if(lastKnownLocation_GPS != null && NEW_LOCATION==true)
 		{
 			NEW_LOCATION = false;
-			return lastKnownLocation_GPS;  //return new Location(lastKnownLocation_GPS);
+			return lastKnownLocation_GPS;  
 		}
 		else return null;
 	}
@@ -81,15 +99,8 @@ public class GPS_listener implements LocationListener
 			NEW_LOCATION = true;
 		}
 	}
-	public void onStatusChanged(String provider, int status, Bundle extras) {} // function never called ?
-	public void onProviderEnabled(String provider) {}
-	public void onProviderDisabled(String provider) {}
 
-	/********************************************************************************************************************************************************************/
-	/**************************************************************** functions for GPS *********************************************************************************/
-	/********************************************************************************************************************************************************************/
-
-	/** Determines whether one Location reading is better than the current Location fix
+	/** From Google. Determines whether one Location reading is better than the current Location fix
 	 * @param location  The new Location that you want to evaluate
 	 * @param currentBestLocation  The current Location fix, to which you want to compare the new one
 	 */
@@ -99,8 +110,8 @@ public class GPS_listener implements LocationListener
 
 		// Check whether the new location fix is newer or older
 		long timeDelta = location.getTime() - currentBestLocation.getTime();
-		boolean isSignificantlyNewer = timeDelta > ONE_MINUTES;
-		boolean isSignificantlyOlder = timeDelta < -ONE_MINUTES;
+		boolean isSignificantlyNewer = timeDelta > ONE_MINUTE;
+		boolean isSignificantlyOlder = timeDelta < -ONE_MINUTE;
 		boolean isNewer = timeDelta > 0;
 
 		// If it's been more than two minutes since the current location, use the new location
@@ -130,4 +141,8 @@ public class GPS_listener implements LocationListener
 		if (provider1 == null) { return provider2 == null;}
 		return provider1.equals(provider2);
 	}
+	
+	public void onStatusChanged(String provider, int status, Bundle extras) {} // function never called ?
+	public void onProviderEnabled(String provider) {}
+	public void onProviderDisabled(String provider) {}
 }
