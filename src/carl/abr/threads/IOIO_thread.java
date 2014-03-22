@@ -54,20 +54,33 @@ import ioio.lib.util.BaseIOIOLooper;
 
 public class IOIO_thread extends BaseIOIOLooper 
 {
-//	private static final String TAG = "IOIO_thread";
+//	static final String TAG = "IOIO_thread";
 
+	/**default value of the pulse width of the PWM signals*/
+	static final int DEFAULT_PWM = 1500;	
+	
+	/** PWM IOIO outputs used to control the motor and servo*/
 	PwmOutput motor_output, servo_output;
+	
+	/** Analog IOIO inputs used to read the values of the infrared sensors*/
 	AnalogInput IR_left, IR_right, IR_front_left, IR_front_right;
-	float pwm_M, pwm_S;
-	boolean INVERTED, AUTO;	
 
-	static int DEFAULT_PWM = 1500;	
-
-	float[] IR_values;
+	/** array containing the pulse width of the PWM signals sent to the motor and servo*/
 	float[] PWM_values;
+	
+	/** array containing the the values read from the infrared sensors*/
+	float[] IR_values;
+	
+	/** true if the pwm values should be inverted (e.g. for some cars: 2000= right, others 1000=right)*/
+	boolean INVERTED;		
 
-	public boolean UPDATED = false;
+	/** true: new IR values are available <br> false: IR values have already been accessed */
+	boolean UPDATED = false;
 
+	/** 
+	 * Constructor <br>
+	 *TODO: give default pwm for motor and servo sent by server 
+	 */	
 	public IOIO_thread()
 	{		
 		INVERTED = false;
@@ -79,6 +92,10 @@ public class IOIO_thread extends BaseIOIOLooper
 		PWM_values[1] = DEFAULT_PWM;		
 	}
 
+	/** 
+	 * Setup function that opens input and outputs with pins numbers.
+	 * 
+	 */	
 	@Override
 	public void setup() throws ConnectionLostException 
 	{	
@@ -90,6 +107,11 @@ public class IOIO_thread extends BaseIOIOLooper
 		IR_right = ioio_.openAnalogInput(41);
 	}
 
+	/** 
+	 * Main loop of the thread. Reads values of analog inputs (e.g. IR sensors), calls {@link #wait()}, then sets pulse width of PWM outputs. <br>
+	 * When wait() is called, the thread pauses and waits to be awaken by the main thread that will call {@link #set_PWM_values(float, float)} which calls  {@link #notify()}.
+	 * @see {@link #wait()} , {@link #set_PWM_values(float, float)} , {@link #notify()}
+	 */	
 	@Override
 	public void loop() throws ConnectionLostException 
 	{
@@ -105,8 +127,8 @@ public class IOIO_thread extends BaseIOIOLooper
 				
 				wait();	
 
-				pwm_M = PWM_values[0];
-				pwm_S = PWM_values[1];
+				float pwm_M = PWM_values[0];
+				float pwm_S = PWM_values[1];
 				if(INVERTED == true)
 				{
 					pwm_M = 1500 - (pwm_M-1500);
@@ -120,6 +142,12 @@ public class IOIO_thread extends BaseIOIOLooper
 		}
 	}
 
+	/** 
+	 * Get the new values from the IR sensors  
+	 * @param float[5] : normalized values [0;1] of the IR sensors<br>
+	 * null : if IR values have already been accessed
+	 * 
+	 */	
 	public synchronized float[] get_IR_values()
 	{		
 		if(UPDATED == true)
@@ -128,9 +156,14 @@ public class IOIO_thread extends BaseIOIOLooper
 			return IR_values;
 		}
 		else return null;
-
 	}	 
 
+	/** 
+	 * Sets pulse width of the PWM signals of the motor and servo, then calls {@link #notify()} to awake the ioio thread.
+	 * @param pwm_motor : pulse width of the PWM signal controlling the motor
+	 * @param pwm_servo : pulse width of the PWM signal controlling the servo
+	 * @see {@link #wait()} , {@link #loop()} , {@link #notify()}
+	 */	
 	public synchronized void set_PWM_values(float pwm_motor, float pwm_servo)
 	{
 		PWM_values[0] = pwm_motor;
@@ -139,6 +172,11 @@ public class IOIO_thread extends BaseIOIOLooper
 		notify();					//awake this IOIO thread waiting
 	}	
 
+	/** 
+	 * Set inverted pwm commands
+	 * @param inv : true to inverse pwm pulse width around 1500 (e.g. 1000 becomes 2000, and 2000 becomes 1000)
+	 * 
+	 */	
 	public synchronized void set_inverted(boolean inv)
 	{
 		INVERTED = inv;
