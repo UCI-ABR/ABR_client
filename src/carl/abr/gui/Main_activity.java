@@ -62,26 +62,43 @@ import android.widget.ToggleButton;
 import carl.abr.threads.Main_thread;
 import carl.gui.R;
 
+/** 
+ * Main activity (GUI) of the ABR_client app. This activity is used to save IP addresses and port numbers to connect to a TCP server.
+ * It also creates a thread ({@link #the_main_thread}) that will run the main loop of the app (connect to the server, get data from sensors camera ioio, process data, send data ,set motor command ioio)
+ * @see Main_thread
+ * */
 public class Main_activity extends Activity
 {
 	final String tag = "Main activity";
+	
+	/** Context of the activity used for gui stuff*/
 	Context the_context;
 	
-	public Main_thread the_main_thread;	//main thread running the main loop (get data from sensors camera ioio, process data, send data ,set motor command ioio)
+	/** Main thread running the main loop (connect to the server, get data from sensors camera ioio, process data, send data ,set motor command ioio)
+	 * @see Main_thread*/
+	Main_thread the_main_thread;
+	
+	/** String containing the IP address of the server*/
 	public String IP_server = null;
+	
+	/** The port number of the TCP socket used to connect to the server*/
 	public int port_TCP;
 
-	/***************************************************************   GUI stuff   **********************************************************/
-	PowerManager.WakeLock wake;			//used to keep screen on
-	My_spinner_Class spinner_IP, spinner_port;
+	/** Used to keep screen on*/
+	PowerManager.WakeLock wake;
+	
+	/** Spinners (dropdown menus) used to select IP and port number*/
+	My_spinner spinner_IP, spinner_port;
+	
+	/** Edittext used to enter/type an IP and port number*/
 	EditText ip_text, port_text;
+	
+	/** Buttons used to add/remove an IP and port number*/
 	Button button_add_IP, button_delete_IP, button_add_port, button_delete_port;
+	
+	/** Button used to connect or disconnect the phone to the server*/
 	public ToggleButton button_connect;		
 
-	
-	/**************************************************************************************************************************************/
-	/********************************************************** activity / GUI ************************************************************/
-	/**************************************************************************************************************************************/
 	@Override
 	public void onCreate(Bundle savedInstanceState) 
 	{
@@ -89,16 +106,18 @@ public class Main_activity extends Activity
 		setContentView(R.layout.main_acti);
 		the_context = this.getApplicationContext();
 
+		// get references to all the gui items
 		ip_text = (EditText) findViewById(R.id.txt_IP);
 		port_text = (EditText) findViewById(R.id.txt_port);
-		spinner_IP = (My_spinner_Class)findViewById(R.id.spinner_IP);
-		spinner_port = (My_spinner_Class)findViewById(R.id.spinner_ports);
+		spinner_IP = (My_spinner)findViewById(R.id.spinner_IP);
+		spinner_port = (My_spinner)findViewById(R.id.spinner_ports);
 		button_add_IP = (Button) findViewById(R.id.btn_add_IP);
 		button_delete_IP= (Button) findViewById(R.id.btn_delete_IP);
 		button_add_port = (Button) findViewById(R.id.btn_add_port);
 		button_delete_port = (Button) findViewById(R.id.btn_delete_port);
 		button_connect = (ToggleButton) findViewById(R.id.btn_connect);
-		set_buttons(false);
+		
+		enable_buttons(false);
 		button_connect.requestFocus();
 
 		spinner_IP.set_file_name("IP_clients.txt");
@@ -110,7 +129,7 @@ public class Main_activity extends Activity
 			{
 				IP_server = spinner_IP.getSelected();		
 				Toast.makeText(the_context, "IP_address: " + IP_server, Toast.LENGTH_SHORT).show();	
-				set_buttons(true);
+				enable_buttons(true);
 			}
 
 			@Override
@@ -124,7 +143,7 @@ public class Main_activity extends Activity
 				String port = spinner_port.getSelected();
 				port_TCP = Integer.parseInt(port);
 				Toast.makeText(the_context, "Port: " + port, Toast.LENGTH_SHORT).show();	
-				set_buttons(true);
+				enable_buttons(true);
 			}
 
 			@Override
@@ -140,7 +159,7 @@ public class Main_activity extends Activity
 				imm.hideSoftInputFromWindow(ip_text.getWindowToken(), 0);
 				spinner_IP.addItem(IP_server);
 				ip_text.clearFocus();
-				set_buttons(true);
+				enable_buttons(true);
 			}
 		});		
 
@@ -148,12 +167,11 @@ public class Main_activity extends Activity
 			public void onClick(View view) 
 			{
 				String port = port_text.getText().toString(); 
-
 				try
 				{
 					port_TCP = Integer.parseInt(port);
 					spinner_port.addItem(port);
-					set_buttons(true);
+					enable_buttons(true);
 				}
 				catch(java.lang.NumberFormatException e)
 				{
@@ -174,22 +192,22 @@ public class Main_activity extends Activity
 		button_delete_IP.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View view) 
 			{
-				if(spinner_IP.remove_item() == false) set_buttons(false);
+				if(spinner_IP.remove_item() == false) enable_buttons(false);
 			}
 		});		
 
 		button_delete_port.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View view) 
 			{
-				if(spinner_port.remove_item() == false) set_buttons(false);
+				if(spinner_port.remove_item() == false) enable_buttons(false);
 			}
 		});		
 
 		button_connect.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View view) 
 			{
-				if (button_connect.isChecked()) Start_TCP_client();
-				else  stop_all();
+				if (button_connect.isChecked()) start_main_thread();
+				else  stop_main_thread();
 			}
 		});		
 	}
@@ -208,29 +226,41 @@ public class Main_activity extends Activity
 	@Override
 	protected void onStop() 
 	{
-		stop_all();
+		stop_main_thread();
 		wake.release();		
 		super.onStop();
-		this.finish();
+		finish();
 	}
 	
-	private void set_buttons(boolean b)
+	/** 
+	 * Enables or disables the delete IP, delete Port and Connect buttons.
+	 * @param b : true to enable the buttons, false to disable the buttons 
+	 * 
+	 */	
+	private void enable_buttons(boolean b)
 	{
 		button_delete_IP.setEnabled(b);
 		button_delete_port.setEnabled(b);
 		button_connect.setEnabled(b);
 	}
 
-	/***************************************************************************************************************************************************/
-	/************************************************************* main thread / TCP client ************************************************************/
-	/***************************************************************************************************************************************************/
-	public void Start_TCP_client()
+	/** 
+	 * Creates and starts the main thread ({@link #the_main_thread}). Starting the thread will call its run() function. 
+	 * @see Main_thread 
+	 * 
+	 */	
+	public void start_main_thread()
 	{		
 		the_main_thread = new Main_thread(this);
-		the_main_thread.start();					//start thread...calls run function
+		the_main_thread.start();				
 	}
 
-	public void stop_all()
+	/** 
+	 * Stops the main thread ({@link #the_main_thread}).
+	 * @see Main_thread
+	 * 
+	 */	
+	public void stop_main_thread()
 	{
 		if(the_main_thread != null) the_main_thread.stop_thread();	
 		the_main_thread=null;

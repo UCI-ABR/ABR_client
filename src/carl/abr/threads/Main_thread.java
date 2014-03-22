@@ -89,6 +89,9 @@ import carl.abr.IO.GPS_listener;
 import carl.abr.IO.Sensors_listener;
 import carl.abr.gui.Main_activity;
 
+/** 
+ * class main thread
+ * */
 public class Main_thread extends Thread implements IOIOLooperProvider 		// implements IOIOLooperProvider: from IOIOActivity
 {
 	static final String TAG = "main_thread";
@@ -163,6 +166,9 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 	//********************************************************************************************************************************************************************/
 	//***************************************************************   constructor   ***************************************************************/
 	//********************************************************************************************************************************************************************/
+	/** 
+	 * main thread
+	 * */
 	public Main_thread(Main_activity gui)
 	{
 		the_gui = gui;
@@ -208,6 +214,7 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 		stop_all();
 	}
 
+	/** stops the thread*/
 	public synchronized void stop_thread()
 	{
 		STOP = true;

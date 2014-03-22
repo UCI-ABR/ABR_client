@@ -91,7 +91,7 @@
                         android:layout_height="wrap_content"
                         android:text="Select IP: " />
 
-                    <carl.abr.gui.My_spinner_Class
+                    <carl.abr.gui.My_spinner
                         android:id="@+id/spinner_IP"
                         android:layout_width="162dp"
                         android:layout_height="wrap_content" />
@@ -115,7 +115,7 @@
                         android:layout_height="wrap_content"
                         android:text="Select port: " />
 
-                    <carl.abr.gui.My_spinner_Class
+                    <carl.abr.gui.My_spinner
                         android:id="@+id/spinner_ports"
                         android:layout_width="177dp"
                         android:layout_height="wrap_content"

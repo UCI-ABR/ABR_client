@@ -58,6 +58,10 @@ import java.util.Vector;
 import android.content.Context;
 import android.widget.Toast;
 
+/** 
+ * Class used to read and write into files.
+ * 
+ */	
 public class File_RW 
 {
 	static FileOutputStream fos = null;
@@ -68,36 +72,55 @@ public class File_RW
 
 	public File_RW(){}
 
-	public static void write_file(Context context, String file, String s, boolean BOOL_APPEND)
+	/** 
+	 * Writes text into a file.
+	 * @param context : context of the parent calling this function 
+	 * @param file : name of the file to be modified or created
+	 * @param text : text (data) to write in the file
+	 * @param append_mode : true if text to be added at the end of an existing file, false to create a new file (and replace existing one)
+	 * 
+	 */	
+	public static void write_file(Context context, String file, String text, boolean append_mode)
 	{
 		try 
 		{
-			if(BOOL_APPEND == true)fos = context.openFileOutput(file, Context.MODE_APPEND);
+			if(append_mode == true)fos = context.openFileOutput(file, Context.MODE_APPEND);
 			else fos = context.openFileOutput(file, Context.MODE_PRIVATE);
 			
 			orw = new OutputStreamWriter(fos);
 			BufferedWriter bf = new BufferedWriter(orw);
-			bf.write(s);
+			bf.write(text);
 			bf.newLine();
 			bf.close();
 			fos.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			Toast.makeText(context, "pb write file 2",Toast.LENGTH_SHORT).show();
 			e.printStackTrace();
 		}
 	}
 	
+	/** 
+	 * Deletes and recreates an empty file with the same name.
+	 * @param context : context of the parent calling this function 
+	 * @param file : name of the file to be re-created
+	 * 
+	 */	
 	public static void reset_file(Context context, String file)
 	{
 		try {
 			context.openFileOutput(file, Context.MODE_PRIVATE);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
+	/** 
+	 * Reads a file and output a list (Vector) of Strings containing the data.
+	 * @param context : context of the parent calling this function 
+	 * @param file : name of the file to be read
+	 * @return Vector containing the data read from the file
+	 * 
+	 */	
 	public static Vector<String> read_file(Context context, String file)
 	{
 		String str="";

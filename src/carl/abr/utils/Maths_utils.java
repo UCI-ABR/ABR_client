@@ -49,12 +49,11 @@ package carl.abr.utils;
 
 public class Maths_utils 
 {
-	public static float sigmoid(float input, float gain, float theta, float zero)
+	public static float sigmoid(float input, float gain, float theta)
 	{
 		float s = gain*(theta - input);
 		s = 1/(1+ (float)Math.exp(s));			
 		
-		if(s<zero) s = 0f;
 		return s;
 	}
 	
