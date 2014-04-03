@@ -182,8 +182,8 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 	@Override
 	public final void run() //function called when: the_main_thread.start();  is called in the Main_activity
 	{	
-		ioio_helper = new IOIOAndroidApplicationHelper(the_gui, this);	// create ioio_helper used to connect to the ioio (copied from IOIOActivity)
-		ioio_helper.create();											// from IOIOActivity			
+//		ioio_helper = new IOIOAndroidApplicationHelper(the_gui, this);	// create ioio_helper used to connect to the ioio (copied from IOIOActivity)
+//		ioio_helper.create();											// from IOIOActivity			
 		load_opencv();													// load opencv libraries for image processing
 		start_tcp();													// connect to the server
 
@@ -544,7 +544,9 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 			{
 				serverAddr = InetAddress.getByName(ip_address_server);
 				socket_udp_ioio = new DatagramSocket();
-
+				
+				ioio_helper = new IOIOAndroidApplicationHelper(the_gui, this);	// create ioio_helper used to connect to the ioio (copied from IOIOActivity)				
+				ioio_helper.create();											// copied from IOIOActivity
 				ioio_helper.start();			
 				IOIO_STARTED = true;	
 			}
@@ -621,6 +623,12 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 			return the_ioio;
 		}
 		else return null;
+		
+//		//for any type of connection: ADB, OpenAccessory, Bluetooth   (will create one thread for each possible connection)
+//		Log.i(TAG,"create ioio: " +  SystemClock.elapsedRealtime());
+//		the_ioio = new IOIO_thread();
+//		the_ioio.set_inverted(INVERTED);
+//		return the_ioio;
 	}
 
 	/********************************************************************************************************************************************************************/
