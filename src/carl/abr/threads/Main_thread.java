@@ -98,13 +98,24 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 	/** Reference to the main activity*/
 	Main_activity the_gui;	
 
-	//***************************************************************   booleans  ***************************************************************/
+	//***************************************************************   synchronization / booleans  ***************************************************************/
+	/** true: thread should be stopped (exit main loop in function {@link #run()})*/
 	boolean STOP 			= false;
+	
+	/** true: reconnect to tcp server. See:  {@link #start_tcp()}, {@link #read_tcp()}*/
 	boolean RECONNECT_TCP	= true;
+	
+	/** true: sensors listeners have been created and attached (started), See:  {@link #start_sensors()}, {@link #stop_sensors()()}*/
 	boolean SENSORS_STARTED	= false;
+	
+	/** true: ioio thread has been been created and started. See:  {@link #start_IOIO()}, {@link #stop_IOIO()}*/
 	boolean IOIO_STARTED	= false;
+	
+	/** true: camera feedback has been been created and started. See {@link #start_camera()}, {@link #stop_camera()}*/
 	boolean CAMERA_STARTED	= false;
-	boolean NEW_IMA			= true;		//first time, image will be created, then modified
+	
+	/** true: when camera starts, a new image ({@link #the_frame}) will be created <br> false: the same image is then modified. <br> See {@link #start_camera()}, {@link #get_camera_data()}*/
+	boolean NEW_IMA			= true;	
 	boolean NEW_FRAME		= false;
 	boolean NEW_DATA_IOIO	= false;	
 	boolean NEW_DATA_GPS	= false;
