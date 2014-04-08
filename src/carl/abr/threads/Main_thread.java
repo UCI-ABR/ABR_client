@@ -131,6 +131,9 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 	/** true: RC mode for robot. Commands are sent over network and received when reading TCP socket in {@link #read_tcp()} <br><br> See {@link #read_tcp()}*/
 	boolean RC_MODE 		= true;
 	
+	/** true: explore mode for robot. Function to be implemented {@link #read_tcp()} <br><br> See {@link #read_tcp()}*/
+	boolean EXPLORE_MODE	= true;
+	
 	/** true if the pwm values should be inverted (e.g. for some cars: 2000= right, others 1000=right). <br> See {@link #read_tcp()} , {@link IOIO_thread#INVERTED}*/
 	boolean INVERTED 		= false;	
 
@@ -164,14 +167,14 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 	/** Used to open the pins of the IOIO, and read/write values. <br> See {@link IOIO_thread}*/
 	IOIO_thread the_ioio;
 	
-	/** Default, min and max values of the pulse width of the PWM signals sent to the motor and servo*/
-	static int DEFAULT_PWM = 1500, MIN_PWM_MOTOR=1400, MAX_PWM_MOTOR=1600, MIN_PWM_SERVO=1000, MAX_PWM_SERVO=2000;
+	/** values of the pulse width of the PWM signals. Sent by server in: read_tcp()*/
+	int min_servo, min_motor, max_servo, max_motor, default_servo, default_motor;
 	
 	/** Pulse width of the pwm signal used to control the servo.*/
-	float pwm_servo = DEFAULT_PWM;
+	float pwm_servo;
 	
 	/** Pulse width of the pwm signal used to control the motor.*/
-	float pwm_motor = DEFAULT_PWM;	
+	float pwm_motor;	
 	
 	/** Values read from the IR sensors.*/
 	float IR_right, IR_left, IR_front_left, IR_front_right; 
@@ -282,10 +285,8 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 	@Override
 	public final void run() //function called when: the_main_thread.start();  is called in the Main_activity
 	{	
-//		ioio_helper = new IOIOAndroidApplicationHelper(the_gui, this);	// create ioio_helper used to connect to the ioio (copied from IOIOActivity)
-//		ioio_helper.create();											// from IOIOActivity			
-		load_opencv();													// load opencv libraries for image processing
-		start_tcp();													// connect to the server
+		load_opencv();							// load opencv libraries for image processing
+		start_tcp();							// connect to the server
 
 		while(STOP == false)
 		{		
@@ -297,7 +298,7 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 				get_ioio_data();
 
 				//do stuff with data here...
-				//				if (EXPLORE_MODE == true)	autoDriveWF();
+				if (EXPLORE_MODE == true)	explore();
 
 				//send data to server (udp sockets)
 				send_sensors_data();
@@ -478,19 +479,17 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 			if(sss[0].matches("TCP_OK") == true){}	//the server replied...good but don't really care actually
 			else if(sss[0].matches("PWM") == true)
 			{		
-				pwm_motor = Integer.parseInt(sss[1]);
-				pwm_servo = Integer.parseInt(sss[2]);
+				pwm_motor 		= Integer.parseInt(sss[1]);
+				pwm_servo 		= Integer.parseInt(sss[2]);
 			}
 			else if(sss[0].matches("CAMERA_ON") == true)
-			{	        		
-				Log.i(TAG,"start cam");	      
-				port_camera = Integer.parseInt(sss[1]);
-				idx_size_cam = Integer.parseInt(sss[2]);
+			{	        		 
+				port_camera 	= Integer.parseInt(sss[1]);
+				idx_size_cam 	= Integer.parseInt(sss[2]);
 				start_camera();
 			}
 			else if(sss[0].matches("CAMERA_OFF") == true)
-			{
-				Log.i(TAG,"stop cam ");			
+			{			
 				stop_camera();
 			}
 			else if(sss[0].matches("IMG_RATE") == true)
@@ -499,35 +498,38 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 			}
 			else if(sss[0].matches("SENSORS_ON") == true)
 			{
-				Log.i(TAG,"start sensors ");
-				port_sensors = Integer.parseInt(sss[1]);
+				port_sensors 	= Integer.parseInt(sss[1]);
 				start_sensors();
 			}
 			else if(sss[0].matches("SENSORS_OFF") == true)
 			{
-				Log.i(TAG,"stop sensors ");
 				stop_sensors();
 			}
 			else if(sss[0].matches("IOIO_ON") == true)
 			{				
-				Log.i(TAG,"start ioio");	
-				port_ioio = Integer.parseInt(sss[1]);
-				INVERTED = (Byte.parseByte(sss[2])!=0);
-				RC_MODE = (Byte.parseByte(sss[3])!=0);
+				port_ioio 		= Integer.parseInt(sss[1]);
+				INVERTED 		= (Byte.parseByte(sss[2])!=0);
+				RC_MODE 		= (Byte.parseByte(sss[3])!=0);
+				EXPLORE_MODE 	= (Byte.parseByte(sss[4])!=0);
+				min_servo		= Integer.parseInt(sss[5]);
+				min_motor		= Integer.parseInt(sss[6]);
+				max_servo		= Integer.parseInt(sss[7]);
+				max_motor		= Integer.parseInt(sss[8]);
+				default_servo	= Integer.parseInt(sss[9]);
+				default_motor	= Integer.parseInt(sss[10]);
 				start_IOIO();
 			}
 			else if(sss[0].matches("IOIO_OFF") == true)
 			{
-				Log.i(TAG,"stop ioio ");	
 				stop_IOIO();
 			}
 			else if(sss[0].matches("MODE") == true)
 			{
-				Log.i(TAG,"change mode");
-				RC_MODE = (Byte.parseByte(sss[1])!=0);
+				RC_MODE 		= (Byte.parseByte(sss[1])!=0);
+				EXPLORE_MODE 	= (Byte.parseByte(sss[2])!=0);
 			}
 			else
-				output = false;		//if unknown command sent
+				output 			= false;		//if unknown command sent
 		}
 		return output;
 	}
@@ -708,6 +710,11 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 			}
 		}
 	}
+	
+	private void explore()
+	{
+		//TODO: get sensors values , process and set ioio values to generate autonomous behavior
+	}
 
 	/********************************************************************************************************************************************************************/
 	/****************************************************** function from original IOIOActivity *********************************************************************************/
@@ -718,7 +725,7 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 		if(the_ioio == null && connectionType.matches("ioio.lib.android.bluetooth.BluetoothIOIOConnection"))
 		{
 			Log.i(TAG,"create ioio: " +  SystemClock.elapsedRealtime());
-			the_ioio = new IOIO_thread();
+			the_ioio = new IOIO_thread(default_servo, default_motor);
 			the_ioio.set_inverted(INVERTED);
 			return the_ioio;
 		}
@@ -737,7 +744,7 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 	private void start_camera()
 	{
 		if(CAMERA_STARTED == false)
-		{
+		{	
 			the_camera = new Camera_feedback(idx_size_cam);
 			try
 			{

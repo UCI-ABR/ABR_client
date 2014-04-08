@@ -54,7 +54,7 @@ import ioio.lib.util.BaseIOIOLooper;
 
 /** 
  * Class (thread) used to open pins of the IOIO, as well as read IR values, and send pwm signals to the servo and motor of the robot.<br>
- * The main loop of the thread is executed in {@link #loop()}.
+ * The main loop of the thread is executed in {static final int MIN_PWM_MOTOR = 1500;.
  * Values of the IR sensors can be accessed using {@link #get_IR_values()}.
  * The pulse width of the PWM signals sent to the motor and servo signal are set using {@link #set_PWM_values(float, float)}.
  * @see {@link #loop()} , {@link #get_IR_values()}, {@link #set_PWM_values(float, float)} , {@link #setup()} , {@link #set_inverted(boolean)}
@@ -64,8 +64,8 @@ public class IOIO_thread extends BaseIOIOLooper
 {
 //	static final String TAG = "IOIO_thread";
 
-	/**default value of the pulse width of the PWM signals*/
-	static final int DEFAULT_PWM = 1500;	
+	/** values of the pulse width of the PWM signals. Sent by server in: read_tcp()*/
+	int default_servo, default_motor;
 	
 	/** PWM IOIO outputs used to control the motor and servo*/
 	PwmOutput motor_output, servo_output;
@@ -87,17 +87,19 @@ public class IOIO_thread extends BaseIOIOLooper
 
 	/** 
 	 * Constructor <br>
-	 *TODO: give default pwm for motor and servo sent by server 
+	 * Sets min, max and default pwm pulse witdh for motor and servo (sent by server)
 	 */	
-	public IOIO_thread()
+	public IOIO_thread(int d_servo, int d_motor)
 	{		
-		INVERTED = false;
+		INVERTED 		= false;
+		default_servo 	= d_servo;
+		default_motor	= d_motor;
 
-		IR_values  = new float[5];
-		PWM_values = new float[2];
+		IR_values  		= new float[5];
+		PWM_values 		= new float[2];
 
-		PWM_values[0] = DEFAULT_PWM;
-		PWM_values[1] = DEFAULT_PWM;		
+		PWM_values[0] 	= default_motor;
+		PWM_values[1] 	= default_servo;		
 	}
 
 	/** 
@@ -107,12 +109,12 @@ public class IOIO_thread extends BaseIOIOLooper
 	@Override
 	public void setup() throws ConnectionLostException 
 	{	
-		motor_output = ioio_.openPwmOutput(5, 100);	
-		servo_output = ioio_.openPwmOutput(7, 100);
-		IR_left = ioio_.openAnalogInput(38);
-		IR_front_left = ioio_.openAnalogInput(39);
-		IR_front_right = ioio_.openAnalogInput(40);
-		IR_right = ioio_.openAnalogInput(41);
+		motor_output 	= ioio_.openPwmOutput(5, 100);	
+		servo_output 	= ioio_.openPwmOutput(7, 100);
+		IR_left 		= ioio_.openAnalogInput(38);
+		IR_front_left 	= ioio_.openAnalogInput(39);
+		IR_front_right 	= ioio_.openAnalogInput(40);
+		IR_right 		= ioio_.openAnalogInput(41);
 	}
 
 	/** 
