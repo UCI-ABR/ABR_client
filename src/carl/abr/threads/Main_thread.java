@@ -158,45 +158,110 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 	Mat the_frame,dest, dest2;						
 
 	//*****************************************   IOIO    ***************************************************************/
-	IOIOAndroidApplicationHelper ioio_helper;	
+	/** Used to connect to the IOIO*/
+	IOIOAndroidApplicationHelper ioio_helper;
+	
+	/** Used to open the pins of the IOIO, and read/write values. <br> See {@link IOIO_thread}*/
 	IOIO_thread the_ioio;
-	static int DEFAULT_PWM = 1500, MIN_PWM_MOTOR=1400, MAX_PWM_MOTOR=1600, MIN_PWM_SERVO=1000, MAX_PWM_SERVO=2000;	
+	
+	/** Default, min and max values of the pulse width of the PWM signals sent to the motor and servo*/
+	static int DEFAULT_PWM = 1500, MIN_PWM_MOTOR=1400, MAX_PWM_MOTOR=1600, MIN_PWM_SERVO=1000, MAX_PWM_SERVO=2000;
+	
+	/** Pulse width of the pwm signal used to control the servo.*/
 	float pwm_servo = DEFAULT_PWM;
+	
+	/** Pulse width of the pwm signal used to control the motor.*/
 	float pwm_motor = DEFAULT_PWM;	
+	
+	/** Values read from the IR sensors.*/
 	float IR_right, IR_left, IR_front_left, IR_front_right; 
-	float[] IR_vals, PWM_vals;
+	
+	/** Values read from the IR sensors.*/
+	float[] IR_vals;
+	
+	/** Pulse width of the pwm signal used to control the motor and servo.*/
+	float[] PWM_vals;
 
 	//*****************************************   sensors  & GPS  ***************************************************************/
-	SensorManager sensorManager;	
+	/** Used to have a access to the phone's sensors. <br> See {@link SensorManager}*/ 
+	SensorManager sensorManager;
+	
+	/** Sensors of the phone being used.*/
 	Sensor compass, accelerometer, gyro;
+	
+	/** Used to have access to the location (e.g. GPS) of the phone. <br> See  {@link LocationManager}*/
 	LocationManager locationManager;
+	
+	/** Listener used to have access to the phone's sensors. <br> See {@link Sensors_listener}*/ 
 	Sensors_listener the_sensors;
+	
+	/** Listener used to have access to the phone's location. <br> See {@link GPS_listener}*/ 
 	GPS_listener the_GPS;
+	
+	/** Acceleration values of the phone. Set using {@link Sensors_listener#get_acceleration()}*/
 	float[] acceleration;
+	
+	/** Orientation values of the phone. Set using {@link Sensors_listener#get_orientation()}*/
 	float[] orientation;
+	
+	/**  Rate of rotation  of the phone. Set using {@link Sensors_listener#get_gyro_values()}*/
 	float[] gyroscope;
+	
+	/** Locations of the phone.  Set using {@link GPS_listener#get_location()}*/
 	Location lastKnownLocation_GPS, target_location;
+	
+	/** attributes of the last GPS fix / location*/
 	double latitude, longitude, altitude, accuracy;
+	
+	/** Declination of the horizontal component of the magnetic field from true north. Set using {@link GeomagneticField#getDeclination()}*/
 	float declination;
 
 	//*****************************************   UDP   ***************************************************************/
+	/** Size of the header of each UDP packet sent to the server. ONLY used for sending the video frame. <br> See {@link #send_camera_data()}*/
 	static int HEADER_SIZE 			= 5;
+	
+	/** Maximum size of a UDP packet sent to the server. ONLY used for sending the video frame. <br> See {@link #send_camera_data()}*/
 	static int DATAGRAM_MAX_SIZE 	= 1450 - HEADER_SIZE;		
+	
+	/** IP address of the server.*/
 	InetAddress serverAddr;
+	
+	/** IP address (as a String) of the server.*/
 	String ip_address_server;	
-	DatagramSocket socket_udp_ioio, socket_udp_sensors, socket_udp_camera;	
+	
+	/** UDP sockets used to send data to the server.*/
+	DatagramSocket socket_udp_ioio, socket_udp_sensors, socket_udp_camera;
+	
+	/** Port opened for the UDP sockets used to send data to the server.*/
 	int port_ioio, port_sensors, port_camera;	
 
 	//*****************************************   TCP   ***************************************************************/
+	/** Port opened for the TCP socket used to connect to the server.*/
 	int port_TCP;
+	
+	/** TCP socket*/
 	Socket the_TCP_socket;
+	
+	/** IP address of the server.*/
 	InetSocketAddress serverAddr_TCP;
+	
+	/** Used to write to the TCP socket.*/
 	BufferedWriter out;
+	
+	/** Used to read on the TCP socket.*/
 	BufferedReader input;
+	
+	/** Counter used to check the state of the TCP connection to the server. <br> See {@link #check_tcp()}*/
 	int counter_TCP_check			= 0;
-	static int TCP_CHECK_RATE		= 500;		// check tcp connection to the server every 500 timesteps
-	static int CONNECT_TIMEOUT 		= 5000;		//timeout (ms) for connecting tcp socket
-	static int READ_TIMEOUT 		= 20;		//timeout (ms) when reading on tcp socket...also used like a wait()/sleep() for main loop
+	
+	/**  Check tcp connection to the server every 500 timesteps. <br> See {@link #check_tcp()}*/
+	static int TCP_CHECK_RATE		= 500;
+	
+	/**  Timeout (ms) for connecting tcp socket <br> See {@link #start_tcp()}*/
+	static int CONNECT_TIMEOUT 		= 5000;
+	
+	/**  Timeout (ms) when reading on tcp socket...also used as a wait()/sleep() for main loop<br> See {@link #start_tcp()}*/
+	static int READ_TIMEOUT 		= 20;	
 
 	//********************************************************************************************************************************************************************/
 	//***************************************************************   constructor   ***************************************************************/

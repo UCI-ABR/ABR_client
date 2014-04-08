@@ -52,6 +52,14 @@ import ioio.lib.api.PwmOutput;
 import ioio.lib.api.exception.ConnectionLostException;
 import ioio.lib.util.BaseIOIOLooper;
 
+/** 
+ * Class (thread) used to open pins of the IOIO, as well as read IR values, and send pwm signals to the servo and motor of the robot.<br>
+ * The main loop of the thread is executed in {@link #loop()}.
+ * Values of the IR sensors can be accessed using {@link #get_IR_values()}.
+ * The pulse width of the PWM signals sent to the motor and servo signal are set using {@link #set_PWM_values(float, float)}.
+ * @see {@link #loop()} , {@link #get_IR_values()}, {@link #set_PWM_values(float, float)} , {@link #setup()} , {@link #set_inverted(boolean)}
+ *
+ */	
 public class IOIO_thread extends BaseIOIOLooper 
 {
 //	static final String TAG = "IOIO_thread";
