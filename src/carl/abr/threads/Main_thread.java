@@ -52,7 +52,6 @@ import ioio.lib.util.IOIOLooperProvider;
 import ioio.lib.util.android.IOIOAndroidApplicationHelper;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -116,22 +115,47 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 	
 	/** true: when camera starts, a new image ({@link #the_frame}) will be created <br> false: the same image is then modified. <br> See {@link #start_camera()}, {@link #get_camera_data()}*/
 	boolean NEW_IMA			= true;	
+	
+	/** true: a new frame is available after calling {@link Camera_feedback#get_data()} in {@link #get_camera_data()}.  <br><br> See {@link #start_camera()}, {@link #get_camera_data()}*/
 	boolean NEW_FRAME		= false;
-	boolean NEW_DATA_IOIO	= false;	
+	
+	/** true: new data from the IOIO is available after calling {@link IOIO_thread#get_IR_values()} in {@link #get_ioio_data()}.  <br><br> See {@link #get_ioio_data()}*/
+	boolean NEW_DATA_IOIO	= false;
+	
+	/** true: new data from the GPS is available after calling {@link GPS_listener#get_location()} in {@link #get_sensors_data()}.  <br><br> See {@link #get_sensors_data()}*/
 	boolean NEW_DATA_GPS	= false;
-	boolean NEW_DECLI		= false;	//only get earth declination once
-	boolean RC_MODE 		= true;		// rc mode for robot
-	boolean INVERTED 		= false;	// inverted pwm signal
+	
+	/** true: used to get the earth declination only once in {@link #get_sensors_data()}.  <br><br> See {@link #get_sensors_data()}*/
+	boolean NEW_DECLI		= false;
+	
+	/** true: RC mode for robot. Commands are sent over network and received when reading TCP socket in {@link #read_tcp()} <br><br> See {@link #read_tcp()}*/
+	boolean RC_MODE 		= true;
+	
+	/** true if the pwm values should be inverted (e.g. for some cars: 2000= right, others 1000=right). <br> See {@link #read_tcp()} , {@link IOIO_thread#INVERTED}*/
+	boolean INVERTED 		= false;	
 
+	
 	//***************************************************************   camera   ***************************************************************/
+	/** Used to get the frame from the camera. <br> See {@link Camera_feedback}*/
 	Camera_feedback the_camera;
-	int idx_size_cam; 					//index used to set size of image from camera	
-	ByteArrayOutputStream byteStream;
-	byte frame_nb = 0;	
-	int width_ima, height_ima,packetCount,nb_packets,size;
-	byte[] picData;
+	
+	/** Index used to set size of image (resolution) of the camera. <br> See {@link #start_camera()}*/
+	int idx_size_cam;
+	
+	/**  Index number of the actual frame (reset to 0 after 126)*/
+	byte idx_frame = 0;
+	
+	/**  Resolution / size of frame*/
+	int width_ima, height_ima;
+	
+	/**  Array containing video frame after jpeg compression. This array is being sent to server over udp socket <br> See {@link #get_camera_data()} , {@link #send_camera_data()}*/
+	byte[] data_frame;
+	
+	/** JPEG Compression rate / quality*/
 	int compression_rate;
-	Mat the_frame,dest, dest2;							//openCV images	
+	
+	/** openCV images used containing video frame before and after image processing. <br> See {@link #get_camera_data()}*/
+	Mat the_frame,dest, dest2;						
 
 	//*****************************************   IOIO    ***************************************************************/
 	IOIOAndroidApplicationHelper ioio_helper;	
@@ -696,7 +720,6 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 
 				dest = new Mat(64 + 32,80,CvType.CV_8UC1);	
 				dest2 = new Mat();
-				byteStream = new ByteArrayOutputStream();
 				compression_rate = 75;					// default jpeg compression rate
 				NEW_IMA=false;
 
@@ -707,7 +730,7 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 			if(data != null)
 			{
 				the_frame.put(0, 0, data);
-				//				Imgproc.cvtColor(m, dest, Imgproc.COLOR_YUV420sp2RGB,4);	//YUV to ARGB
+//				Imgproc.cvtColor(the_frame, dest, Imgproc.COLOR_YUV420sp2RGB,4);	//YUV to ARGB
 
 				Imgproc.resize(the_frame, dest, dest.size());
 				Imgproc.cvtColor(dest, dest2, Imgproc.COLOR_YUV420sp2GRAY);		//format to grayscale				
@@ -718,7 +741,7 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 				Highgui.imencode(".jpg", dest2, buff, params);				
 				//************************/
 
-				picData = buff.toArray();
+				data_frame = buff.toArray();
 				NEW_FRAME = true;
 			}
 			else NEW_FRAME = false;
@@ -729,30 +752,30 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 	{
 		if(NEW_FRAME == true && socket_udp_camera!=null)
 		{				
-			nb_packets = (int)Math.ceil(picData.length / (float)DATAGRAM_MAX_SIZE);				//Number of packets used for this bitmap
-			size = DATAGRAM_MAX_SIZE;
+			int nb_packets = (int)Math.ceil(data_frame.length / (float)DATAGRAM_MAX_SIZE);				//Number of packets used for this bitmap
+			int size = DATAGRAM_MAX_SIZE;
 
-			for(packetCount = 0; packetCount < nb_packets; packetCount++)						// Loop through slices of the bitmap
+			for(int packetCount = 0; packetCount < nb_packets; packetCount++)						// Loop through slices of the bitmap
 			{
 				//If last or only one packet: set packet size to what's left of data
-				if(packetCount == nb_packets-1)	size = picData.length - packetCount * DATAGRAM_MAX_SIZE;
+				if(packetCount == nb_packets-1)	size = data_frame.length - packetCount * DATAGRAM_MAX_SIZE;
 
 				/* create own header */
 				byte[] data2 = new byte[HEADER_SIZE + size];
-				data2[0] = (byte)frame_nb;
+				data2[0] = (byte)idx_frame;
 				data2[1] = (byte)nb_packets;
 				data2[2] = (byte)packetCount;
 
-				System.arraycopy(picData, packetCount * DATAGRAM_MAX_SIZE, data2, HEADER_SIZE, size);	// Copy current slice to byte array		
+				System.arraycopy(data_frame, packetCount * DATAGRAM_MAX_SIZE, data2, HEADER_SIZE, size);	// Copy current slice to byte array		
 				try 
 				{			
 					DatagramPacket packet = new DatagramPacket(data2, data2.length, serverAddr, port_camera);
 					socket_udp_camera.send(packet);
 				}catch (Exception e) {	Log.e(TAG, "Error: ", e);}	
 			}
-			frame_nb++;
+			idx_frame++;
 
-			if(frame_nb == 127)frame_nb=0;
+			if(idx_frame == 127)idx_frame=0;
 		}
 	}
 	
@@ -775,10 +798,8 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 					break;
 				}
 			}
-		};
-		
+		};		
 		if (!OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_8, the_gui, mLoaderCallback)) // load opencv 2.4.8 libraries
 			Log.e(TAG, "Cannot connect to OpenCV Manager");		
-
 	}
 }
