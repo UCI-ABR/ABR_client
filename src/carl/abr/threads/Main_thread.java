@@ -801,7 +801,7 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 			if(NEW_IMA==true)
 			{	
 				compression_rate = 75;					// default jpeg compression rate
-				the_frame = new Mat(the_camera.mPreviewSize.height + the_camera.mPreviewSize.height / 2, the_camera.mPreviewSize.width, CvType.CV_8UC1);	//m will be YUV format
+				the_frame = new Mat(the_camera.mPreviewSize.height + the_camera.mPreviewSize.height / 2, the_camera.mPreviewSize.width, CvType.CV_8UC1);	//the_frame will be YUV format
 				dest = new Mat();
 				
 				if(RESIZE_IMA) 

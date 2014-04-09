@@ -14,18 +14,15 @@ http://www.socsci.uci.edu/~jkrichma/ABR/index.html
 If you have questions, go to:
 https://groups.google.com/forum/?hl=en#!forum/android-based-robotics
 
-   
-!!! ON GOING PROGRESS !!!
-------------------------
-
-App still needs debugging, comments, optimization...
+The necessary libraries can be found here:
+https://github.com/UCI-ABR/ABR_libraries
 
 
 Requirements
 ------------
 
 - Android 4.2.2
-- opencv 2.4.5 for Android
-- IOIO libraries (IOIO0330)
+- opencv 2.4.8 for Android
+- IOIO libraries (IOIO0400)
 
 
