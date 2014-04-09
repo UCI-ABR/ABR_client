@@ -21,7 +21,7 @@ https://github.com/UCI-ABR/ABR_libraries
 Requirements
 ------------
 
-- Android 4.2.2
+- Android 4.0
 - opencv 2.4.8 for Android
 - IOIO libraries (IOIO0400)
 
