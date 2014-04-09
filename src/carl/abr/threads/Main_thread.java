@@ -135,8 +135,14 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 	boolean EXPLORE_MODE	= true;
 	
 	/** true if the pwm values should be inverted (e.g. for some cars: 2000= right, others 1000=right). <br> See {@link #read_tcp()} , {@link IOIO_thread#INVERTED}*/
-	boolean INVERTED 		= false;	
-
+	boolean INVERTED 		= false;
+	
+	/** true: send color image to server. <br>false: send black and white image. <br>See {@link #get_camera_data()}*/
+	boolean COLOR_MODE 		= true;	
+	
+	/** true: resize image sent to server. <br>See {@link #get_camera_data()}*/
+	boolean RESIZE_IMA 		= false;
+	
 	
 	//***************************************************************   camera   ***************************************************************/
 	/** Used to get the frame from the camera. <br> See {@link Camera_feedback}*/
@@ -486,6 +492,10 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 			{	        		 
 				port_camera 	= Integer.parseInt(sss[1]);
 				idx_size_cam 	= Integer.parseInt(sss[2]);
+				COLOR_MODE		= (Byte.parseByte(sss[3])!=0);
+				RESIZE_IMA		= (Byte.parseByte(sss[4])!=0);
+				width_ima 		= Integer.parseInt(sss[5]);
+				height_ima		= Integer.parseInt(sss[6]);
 				start_camera();
 			}
 			else if(sss[0].matches("CAMERA_OFF") == true)
@@ -527,6 +537,10 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 			{
 				RC_MODE 		= (Byte.parseByte(sss[1])!=0);
 				EXPLORE_MODE 	= (Byte.parseByte(sss[2])!=0);
+			}
+			else if(sss[0].matches("COLOR") == true)
+			{
+				COLOR_MODE 		= (Byte.parseByte(sss[1])!=0);
 			}
 			else
 				output 			= false;		//if unknown command sent
@@ -785,16 +799,15 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 		if(CAMERA_STARTED == true && the_camera != null)
 		{
 			if(NEW_IMA==true)
-			{
-				width_ima = the_camera.mPreviewSize.width;
-				height_ima = the_camera.mPreviewSize.height;		
-				the_frame = new Mat(height_ima + height_ima / 2, width_ima, CvType.CV_8UC1);	//m will be YUV format
-
-				dest = new Mat(64 + 32,80,CvType.CV_8UC1);	
-				dest2 = new Mat();
+			{	
 				compression_rate = 75;					// default jpeg compression rate
+				the_frame = new Mat(the_camera.mPreviewSize.height + the_camera.mPreviewSize.height / 2, the_camera.mPreviewSize.width, CvType.CV_8UC1);	//m will be YUV format
+				dest = new Mat();
+				
+				if(RESIZE_IMA) 
+					dest2 = new Mat(height_ima + height_ima/2,width_ima,CvType.CV_8UC1);				
+				
 				NEW_IMA=false;
-
 				Log.i(TAG, "new ima");
 			}			
 
@@ -802,17 +815,19 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 			if(data != null)
 			{
 				the_frame.put(0, 0, data);
-//				Imgproc.cvtColor(the_frame, dest, Imgproc.COLOR_YUV420sp2RGB,4);	//YUV to ARGB
+				
+				if(COLOR_MODE)	Imgproc.cvtColor(the_frame, dest, Imgproc.COLOR_YUV420sp2RGB);	//YUV to ARGB				
+				else			Imgproc.cvtColor(the_frame, dest, Imgproc.COLOR_YUV420sp2GRAY);	//format to grayscale	
+				
+				if(RESIZE_IMA)	Imgproc.resize(dest, dest2, dest2.size());
+				else 			dest2 = dest;
 
-				Imgproc.resize(the_frame, dest, dest.size());
-				Imgproc.cvtColor(dest, dest2, Imgproc.COLOR_YUV420sp2GRAY);		//format to grayscale				
-
-				//** compress to jpeg using opencv...not sure it's faster than using Bitmap Compress**/
-				MatOfInt  params = new MatOfInt(Highgui.IMWRITE_JPEG_QUALITY, compression_rate);				
-				MatOfByte buff = new MatOfByte();	
-				Highgui.imencode(".jpg", dest2, buff, params);				
+				// compress to jpeg using opencv...not sure it's faster than using Bitmap Compress
+				MatOfInt  params = new MatOfInt(Highgui.IMWRITE_JPEG_QUALITY, compression_rate);		
+				MatOfByte buff = new MatOfByte();
+				Highgui.imencode(".jpg", dest2, buff, params);	//actually return data in BGR format (default openCV format)
 				//************************/
-
+				
 				data_frame = buff.toArray();
 				NEW_FRAME = true;
 			}
