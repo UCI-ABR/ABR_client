@@ -47,7 +47,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package carl.abr.gui;
 
-import android.R;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -61,6 +60,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 import carl.abr.threads.Main_thread;
+import carl.gui.R;
 
 /** 
  * Main activity (GUI) of the ABR_client app. This activity is used to save IP addresses and port numbers to connect to a TCP server.
