@@ -806,7 +806,7 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 				dest = new Mat();
 				
 				if(RESIZE_IMA) 
-					dest2 = new Mat(height_ima + height_ima/2,width_ima,CvType.CV_8UC1);				
+					dest2 = new Mat(height_ima,width_ima,CvType.CV_8UC1);				
 				
 				NEW_IMA=false;
 				Log.i(TAG, "new ima");
