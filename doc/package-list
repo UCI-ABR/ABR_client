@@ -2,3 +2,5 @@ carl.abr.IO
 carl.abr.gui
 carl.abr.threads
 carl.abr.utils
+carl.gui
+org.opencv
