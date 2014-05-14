@@ -9,4 +9,9 @@
     <string name="btn_add_port">Add</string>
     <string name="btn_del_ip">Del</string>
     <string name="btn_del_port">Del</string>
+    <string name="select_connect">Connect as :</string>
+    <string-array name="spinner_connect_as">
+        <item>Robot</item>
+        <item>Camera</item>
+    </string-array>
 </resources>

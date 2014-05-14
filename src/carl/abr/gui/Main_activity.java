@@ -55,8 +55,10 @@ import android.os.PowerManager;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 import carl.abr.threads.Main_thread;
@@ -90,7 +92,10 @@ public class Main_activity extends Activity
 	/** Spinners (dropdown menus) used to select IP and port number*/
 	My_spinner spinner_IP, spinner_port;
 	
-	/** Edittext used to enter/type an IP and port number*/
+	/** Spinner used to select connection type */
+	Spinner spinner_connect_as;
+	
+	/** EditText used to enter/type an IP and port number*/
 	EditText ip_text, port_text;
 	
 	/** Buttons used to add/remove an IP and port number*/
@@ -111,6 +116,7 @@ public class Main_activity extends Activity
 		port_text = (EditText) findViewById(R.id.txt_port);
 		spinner_IP = (My_spinner)findViewById(R.id.spinner_IP);
 		spinner_port = (My_spinner)findViewById(R.id.spinner_ports);
+		spinner_connect_as = (Spinner)findViewById(R.id.spinner_connect_as);
 		button_add_IP = (Button) findViewById(R.id.btn_add_IP);
 		button_delete_IP= (Button) findViewById(R.id.btn_delete_IP);
 		button_add_port = (Button) findViewById(R.id.btn_add_port);
@@ -122,6 +128,16 @@ public class Main_activity extends Activity
 
 		spinner_IP.set_file_name("IP_clients.txt");
 		spinner_port.set_file_name("ports_clients.txt");
+		
+		// Connect as: spinner
+		// create an ArrayAdapter using the string array and a default spinner layout
+		ArrayAdapter<CharSequence> adapter_select = ArrayAdapter.createFromResource(this,
+				R.array.spinner_connect_as, android.R.layout.simple_spinner_item);
+		// specify the layout to use when the list of choices appears
+		adapter_select.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		// apply the adapter to the spinner
+		spinner_connect_as.setAdapter(adapter_select);
+		
 
 		spinner_IP.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 			@Override

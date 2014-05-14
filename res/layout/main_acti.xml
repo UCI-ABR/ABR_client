@@ -128,6 +128,25 @@
                         android:layout_weight="1.72"
                         android:text="@string/btn_del_port" />
                 </TableRow>
+
+                <TableRow
+                    android:id="@+id/tableRow5"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" >
+
+                    <TextView
+                        android:id="@+id/textView5"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/select_connect" />
+
+                    <Spinner
+                        android:id="@+id/spinner_connect_as"
+                        android:layout_width="177dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.37" />
+                </TableRow>
+
             </TableLayout>
 
             <ToggleButton
