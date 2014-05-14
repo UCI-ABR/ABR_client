@@ -105,7 +105,9 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 {
 	static final String TAG = "main_thread";
 	/** Reference to the main activity*/
-	Main_activity the_gui;	
+	Main_activity the_gui;
+	
+	private String connect_as;
 
 	//***************************************************************   synchronization / booleans  ***************************************************************/
 	/** true: thread should be stopped (exit main loop in function {@link #run()})*/
@@ -285,12 +287,14 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 	
 	/** 
 	 * Constructor main thread.
+	 * @param connect_as connection type (robot/camera)
 	 * */
-	public Main_thread(Main_activity gui)
+	public Main_thread(Main_activity gui, String connect_as)
 	{
 		the_gui = gui;
 		ip_address_server = the_gui.IP_server;	
 		port_TCP = the_gui.port_TCP;
+		this.connect_as = connect_as;
 	}
 	
 
@@ -424,7 +428,11 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 	private boolean send_param_tcp()
 	{
 		String message_TCP = new String();
-		message_TCP = "PHONE/" + Build.MODEL + " " + Build.MANUFACTURER + " " + Build.PRODUCT;		
+		// connection type (robot / camera)
+		message_TCP = "CONNECT/" + connect_as;
+
+		// phone details
+		message_TCP += "/PHONE/" + Build.MODEL + " " + Build.MANUFACTURER + " " + Build.PRODUCT;
 
 		try	// get supported sizes of camera...to send to the server
 		{

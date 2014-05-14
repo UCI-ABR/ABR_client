@@ -267,7 +267,7 @@ public class Main_activity extends Activity
 	 */	
 	public void start_main_thread()
 	{		
-		the_main_thread = new Main_thread(this);
+		the_main_thread = new Main_thread(this, spinner_connect_as.getSelectedItem().toString());
 		the_main_thread.start();				
 	}
 
