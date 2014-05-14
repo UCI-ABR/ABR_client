@@ -23,7 +23,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical|center_horizontal"
-                android:text="Android Based Robotics - Client"
+                android:text="@string/app_name"
                 android:textAppearance="?android:attr/textAppearanceLarge" />
 
             <TableLayout
@@ -40,7 +40,7 @@
                         android:id="@+id/textView1"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="IP server : " />
+                        android:text="@string/ip_server" />
 
                     <EditText
                         android:id="@+id/txt_IP"
@@ -54,7 +54,7 @@
                         android:id="@+id/btn_add_IP"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Add" />
+                        android:text="@string/btn_add_ip" />
                 </TableRow>
 
                 <TableRow
@@ -66,7 +66,7 @@
                         android:id="@+id/textView2"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Port : " />
+                        android:text="@string/port" />
 
                     <EditText
                         android:id="@+id/txt_port"
@@ -77,7 +77,7 @@
                         android:id="@+id/btn_add_port"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Add" />
+                        android:text="@string/btn_add_port" />
                 </TableRow>
 
                 <TableRow
@@ -89,7 +89,7 @@
                         android:id="@+id/textView3"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Select IP: " />
+                        android:text="@string/select_ip" />
 
                     <carl.abr.gui.My_spinner
                         android:id="@+id/spinner_IP"
@@ -101,7 +101,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1.72"
-                        android:text="Del" />
+                        android:text="@string/btn_del_ip" />
                 </TableRow>
 
                 <TableRow
@@ -113,7 +113,7 @@
                         android:id="@+id/textView4"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Select port: " />
+                        android:text="@string/select_port" />
 
                     <carl.abr.gui.My_spinner
                         android:id="@+id/spinner_ports"
@@ -126,7 +126,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1.72"
-                        android:text="Del" />
+                        android:text="@string/btn_del_port" />
                 </TableRow>
             </TableLayout>
 

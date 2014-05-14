@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">ABR Client</string>
+    <string name="ip_server">IP Server :</string>
+    <string name="port">Port :</string>
+    <string name="select_ip">Select IP :</string>
+    <string name="select_port">Select Port :</string>
+    <string name="btn_add_ip">Add</string>
+    <string name="btn_add_port">Add</string>
+    <string name="btn_del_ip">Del</string>
+    <string name="btn_del_port">Del</string>
 </resources>
