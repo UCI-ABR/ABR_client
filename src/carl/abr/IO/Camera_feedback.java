@@ -91,13 +91,16 @@ public class Camera_feedback
 		idx_selected_size = idx_size;			// index used to set preview size
 		NEW_FRAME = false;
 		try 
-		{			 
+		{
+			Log.d(TAG, "camera trying Camera_feedback constructor, idx_size="+idx_size);
 			mCamera = Camera.open();      			
 			dummy_surface = new SurfaceTexture(1);							// so we do not display the video frame on the screen (trick)
 
 			Camera.Parameters parameters = mCamera.getParameters(); 
-			mSupportedPreviewSizes = parameters.getSupportedPreviewSizes();	
+			mSupportedPreviewSizes = parameters.getSupportedPreviewSizes();
+			Log.d(TAG, "camera supported preview sizes length="+mSupportedPreviewSizes.size()+ ", " + mSupportedPreviewSizes);
 			mPreviewSize = mSupportedPreviewSizes.get(idx_selected_size);
+			Log.d(TAG, "camera set mPreviewSize to " + mPreviewSize);
 			parameters.setPreviewSize(mPreviewSize.width, mPreviewSize.height);
 			mCamera.setParameters(parameters);
 

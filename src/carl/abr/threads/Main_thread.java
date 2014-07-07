@@ -440,18 +440,22 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 			Camera.Parameters parameters = mCamera.getParameters(); 
 			List<Size> mSupportedPreviewSizes = parameters.getSupportedPreviewSizes();
 			Size a_size;
+			
+			// inform the receiver about the number of items in the list
+			message_TCP += "/" + Integer.toString(mSupportedPreviewSizes.size());
 
+			// then send all preview sizes
 			for(int i=0;i<mSupportedPreviewSizes.size();i++)
 			{
 				a_size = mSupportedPreviewSizes.get(i);
 				message_TCP += "/" + Integer.toString(a_size.width) + "x"+ Integer.toString(a_size.height); 
 			}
-			message_TCP += "/\n";
 
 			if (mSupportedPreviewSizes != null) {Log.i(TAG, "nb supported sizes: " + mSupportedPreviewSizes.size());}
-			mCamera.release(); 
-			
-			out.write(message_TCP);
+			mCamera.release();
+
+			message_TCP += "/\n"; // TCP message needs to end with this
+			out.write(message_TCP); // send message
 			out.flush();
 			return true;
 		}
@@ -532,6 +536,12 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 				RESIZE_IMA		= (Byte.parseByte(sss[4])!=0);
 				width_ima 		= Integer.parseInt(sss[5]);
 				height_ima		= Integer.parseInt(sss[6]);
+//				Log.d(TAG, "camera read_tcp: port="+Integer.toString(port_camera)
+//						+", size_cam="+Integer.toString(idx_size_cam)
+//						+", color_mode="+Boolean.toString(COLOR_MODE)
+//						+", resize_ima="+Boolean.toString(RESIZE_IMA)
+//						+", width_ima="+Integer.toString(width_ima)
+//						+", height_ima="+Integer.toString(height_ima));
 				start_camera();
 			}
 			else if(sss[0].matches("CAMERA_OFF") == true)
@@ -599,7 +609,7 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 		try
 		{
 			the_sensors = new Sensors_listener();
-			the_GPS = new GPS_listener();	
+			the_GPS = new GPS_listener();
 
 			the_gui.runOnUiThread(new Runnable() 
 			{
@@ -910,7 +920,7 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 				
 				NEW_IMA=false;
 				Log.i(TAG, "new ima");
-			}			
+			}
 
 			byte[] data = the_camera.get_data();
 			if(data != null)
@@ -932,7 +942,9 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 				data_frame = buff.toArray();
 				NEW_FRAME = true;
 			}
-			else NEW_FRAME = false;
+			else {
+				NEW_FRAME = false;
+			}
 		}
 	}
 
