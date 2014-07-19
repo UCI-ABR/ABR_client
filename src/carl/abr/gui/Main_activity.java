@@ -55,7 +55,6 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.PowerManager;
-import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
@@ -77,6 +76,12 @@ public class Main_activity extends Activity
 {
 	final String tag = "Main activity";
 	
+	/** ABR client major version number */
+	public final int MAJOR_VERSION = 1;
+	
+	/** ABR client minor version number */
+	public final int MINOR_VERSION = 2;
+	
 	/** Context of the activity used for gui stuff*/
 	Context the_context;
 	
@@ -97,10 +102,10 @@ public class Main_activity extends Activity
 	My_spinner spinner_IP, spinner_port;
 	
 	/** Spinner used to select connection type */
-	Spinner spinner_connect_as;
+	public Spinner spinner_connect_as;
 	
 	/** Spinner used to select frame rate */
-	Spinner spinner_fps;
+	public Spinner spinner_fps;
 	
 	/** EditText used to enter/type an IP and port number*/
 	EditText ip_text, port_text;
@@ -298,10 +303,7 @@ public class Main_activity extends Activity
 	 */	
 	public void start_main_thread()
 	{
-		// call main thread with a string indicating whether client is "robot" or "camera",
-		// and with what range of rates to capture camera frames 
-		the_main_thread = new Main_thread(this, spinner_connect_as.getSelectedItem().toString(),
-				spinner_fps.getSelectedItemPosition());
+		the_main_thread = new Main_thread(this);
 		the_main_thread.start();				
 	}
 

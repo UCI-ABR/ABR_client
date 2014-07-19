@@ -61,6 +61,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 import org.opencv.android.BaseLoaderCallback;
@@ -82,6 +83,7 @@ import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
+import android.text.format.DateFormat;
 import android.util.Log;
 import carl.abr.IO.Camera_feedback;
 import carl.abr.IO.GPS_listener;
@@ -291,16 +293,18 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 	
 	/** 
 	 * Constructor main thread.
-	 * @param connect_as connection type (robot/camera)
-	 * @param idx_selected_fps the index of the currently selected frame rate range
 	 * */
-	public Main_thread(Main_activity gui, String connect_as, int idx_selected_fps)
+	public Main_thread(Main_activity gui)
 	{
 		the_gui = gui;
 		ip_address_server = the_gui.IP_server;	
 		port_TCP = the_gui.port_TCP;
-		this.connect_as = connect_as;
-		idx_fps_cam = idx_selected_fps;
+		
+		// find string whether ABR client is "robot" or "camera"
+		connect_as = gui.spinner_connect_as.getSelectedItem().toString();
+		
+		// find selected FPS range (selected index)
+		idx_fps_cam = gui.spinner_fps.getSelectedItemPosition();
 	}
 	
 
@@ -436,6 +440,9 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 		String message_TCP = new String();
 		// connection type (robot / camera)
 		message_TCP = "CONNECT/" + connect_as;
+		
+		// client version
+		message_TCP += "/VERSION/"+the_gui.MAJOR_VERSION+"."+the_gui.MINOR_VERSION;
 
 		// phone details
 		message_TCP += "/PHONE/" + Build.MODEL + " " + Build.MANUFACTURER + " " + Build.PRODUCT;
