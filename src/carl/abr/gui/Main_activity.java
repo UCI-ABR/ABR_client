@@ -47,11 +47,15 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package carl.abr.gui;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.PowerManager;
+import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
@@ -95,6 +99,9 @@ public class Main_activity extends Activity
 	/** Spinner used to select connection type */
 	Spinner spinner_connect_as;
 	
+	/** Spinner used to select frame rate */
+	Spinner spinner_fps;
+	
 	/** EditText used to enter/type an IP and port number*/
 	EditText ip_text, port_text;
 	
@@ -117,6 +124,7 @@ public class Main_activity extends Activity
 		spinner_IP = (My_spinner)findViewById(R.id.spinner_IP);
 		spinner_port = (My_spinner)findViewById(R.id.spinner_ports);
 		spinner_connect_as = (Spinner)findViewById(R.id.spinner_connect_as);
+		spinner_fps = (Spinner)findViewById(R.id.spinner_fps);
 		button_add_IP = (Button) findViewById(R.id.btn_add_IP);
 		button_delete_IP= (Button) findViewById(R.id.btn_delete_IP);
 		button_add_port = (Button) findViewById(R.id.btn_add_port);
@@ -137,6 +145,29 @@ public class Main_activity extends Activity
 		adapter_select.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		// apply the adapter to the spinner
 		spinner_connect_as.setAdapter(adapter_select);
+		
+		// Select FPS: Spinner
+		// create an ArrayAdapter using available FPS rates and default spinner layout
+		android.hardware.Camera mCamera = android.hardware.Camera.open();
+		android.hardware.Camera.Parameters parameters = mCamera.getParameters();
+		// read supported FPS rates
+		List<int[]> params_fps = parameters.getSupportedPreviewFpsRange();
+		mCamera.release();
+		mCamera = null;
+
+		// build string array for spinner
+		ArrayList<String> supported_fps = new ArrayList<String>();
+		for (int i=0; i<params_fps.size(); i++) {
+			String str_fps = "[" + Integer.toString(params_fps.get(i)[0]/1000) + ", "
+			+ Integer.toString(params_fps.get(i)[1]/1000) + "]";
+			supported_fps.add(str_fps);
+		}
+		
+		// assign string array to spinner
+		ArrayAdapter<String> adapter_fps = new ArrayAdapter<String>(this,
+				android.R.layout.simple_spinner_item, supported_fps);
+		adapter_fps.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		spinner_fps.setAdapter(adapter_fps);
 		
 
 		spinner_IP.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -266,8 +297,11 @@ public class Main_activity extends Activity
 	 * 
 	 */	
 	public void start_main_thread()
-	{		
-		the_main_thread = new Main_thread(this, spinner_connect_as.getSelectedItem().toString());
+	{
+		// call main thread with a string indicating whether client is "robot" or "camera",
+		// and with what range of rates to capture camera frames 
+		the_main_thread = new Main_thread(this, spinner_connect_as.getSelectedItem().toString(),
+				spinner_fps.getSelectedItemPosition());
 		the_main_thread.start();				
 	}
 

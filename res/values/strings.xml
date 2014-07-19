@@ -14,4 +14,6 @@
         <item>Robot</item>
         <item>Camera</item>
     </string-array>
+    <string name="select_fps">Lock FPS:</string>
+    <string-array name="spinner_fps"></string-array>
 </resources>

@@ -69,8 +69,14 @@ public class Camera_feedback
 	/** Selected preview size*/
 	public Size mPreviewSize;
 	
+	/** Selected frame rate range */
+	public int[] mPreviewFpsRange;
+	
 	/** Index of the selected preview size: sent from the server over tcp socket*/
 	int idx_selected_size;
+	
+	/** Index of the selected FPS range: selected in the ABR client GUI */
+	int idx_selected_fps;
 	
 	/** byte array used to store the data of the image/frame */
 	byte[] data_image;
@@ -86,9 +92,10 @@ public class Camera_feedback
 	 * @param int idx_size: index of selected resolution (preview size) sent by server 
 	 * 
 	 * */
-	public Camera_feedback(int idx_size)
+	public Camera_feedback(int idx_size, int idx_fps)
 	{
 		idx_selected_size = idx_size;			// index used to set preview size
+		idx_selected_fps = idx_fps;				// index used to lock frame rate
 		NEW_FRAME = false;
 		try 
 		{
@@ -102,6 +109,14 @@ public class Camera_feedback
 			mPreviewSize = mSupportedPreviewSizes.get(idx_selected_size);
 			Log.d(TAG, "camera set mPreviewSize to " + mPreviewSize);
 			parameters.setPreviewSize(mPreviewSize.width, mPreviewSize.height);
+
+			// set the frame rate to whatever has been selected in the GUI (idx_selected_fps)
+			List<int[]> mSupportedPreviewFPS = parameters.getSupportedPreviewFpsRange();
+			int[] mFpsRange = mSupportedPreviewFPS.get(idx_selected_fps);
+			Log.d(TAG, "camera selected FPS: ["+mFpsRange[0]+","+mFpsRange[1]+"]");
+			parameters.setPreviewFpsRange(mFpsRange[0], mFpsRange[1]);
+
+			// make all param changes effective
 			mCamera.setParameters(parameters);
 
 			try { mCamera.setPreviewTexture(dummy_surface); } catch (IOException t) {}

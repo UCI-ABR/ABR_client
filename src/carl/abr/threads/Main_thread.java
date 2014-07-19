@@ -107,7 +107,11 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 	/** Reference to the main activity*/
 	Main_activity the_gui;
 	
+	/** a string indicating whether client is connecting as a "robot" or a "camera" */
 	private String connect_as;
+	
+	/** the index of the select_fps spinner in the GUI (selected frame rate lock) */
+	private int idx_fps_cam;
 
 	//***************************************************************   synchronization / booleans  ***************************************************************/
 	/** true: thread should be stopped (exit main loop in function {@link #run()})*/
@@ -288,13 +292,15 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 	/** 
 	 * Constructor main thread.
 	 * @param connect_as connection type (robot/camera)
+	 * @param idx_selected_fps the index of the currently selected frame rate range
 	 * */
-	public Main_thread(Main_activity gui, String connect_as)
+	public Main_thread(Main_activity gui, String connect_as, int idx_selected_fps)
 	{
 		the_gui = gui;
 		ip_address_server = the_gui.IP_server;	
 		port_TCP = the_gui.port_TCP;
 		this.connect_as = connect_as;
+		idx_fps_cam = idx_selected_fps;
 	}
 	
 
@@ -855,7 +861,7 @@ public class Main_thread extends Thread implements IOIOLooperProvider 		// imple
 	{
 		if(CAMERA_STARTED == false)
 		{	
-			the_camera = new Camera_feedback(idx_size_cam);
+			the_camera = new Camera_feedback(idx_size_cam, idx_fps_cam);
 			try
 			{
 				serverAddr = InetAddress.getByName(ip_address_server);
